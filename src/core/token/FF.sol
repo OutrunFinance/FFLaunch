@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.24;
 
-import "../core/interfaces/IFF.sol";
+import "./interfaces/IFF.sol";
 
 /**
  * @title FF Token Standard 
@@ -12,7 +12,7 @@ contract FF is IFF {
     uint8 private _decimals;
     uint256 private _totalSupply;
     address private _callee;
-    bool private _isTransferable;   // Enable after inscribing is completed.
+    bool private _isTransferable;   // Enable after FFLaunch is completed.
 
     mapping(address account => uint256) private _balances;
     mapping(address account => mapping(address spender => uint256)) private _allowances;

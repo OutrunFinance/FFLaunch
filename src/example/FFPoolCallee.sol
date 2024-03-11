@@ -2,8 +2,8 @@
 pragma solidity ^0.8.24;
 
 import "./IOutswapV1Router.sol";
-import "../core/interfaces/IFF.sol";
-import "../core/interfaces/IPoolCallee.sol";
+import "../core/callee/IPoolCallee.sol";
+import "../core/token/interfaces/IFF.sol";
 
 /**
  * @dev example - $FF pool callee
