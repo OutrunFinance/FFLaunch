@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 import "./IOutswapV1Router.sol";
 import "../core/callee/IPoolCallee.sol";
 import "../core/token/interfaces/IFF.sol";
@@ -8,7 +10,7 @@ import "../core/token/interfaces/IFF.sol";
 /**
  * @dev example - $FF pool callee
  */
-contract FFPoolCallee is IPoolCallee {
+contract FFPoolCallee is IPoolCallee, Ownable {
     address public immutable PETH;      // Price token
     address public immutable _token;
     address public immutable _launcher;
@@ -23,12 +25,13 @@ contract FFPoolCallee is IPoolCallee {
     uint256 public checkPoint1;
 
     constructor(
+        address _owner,
         address _pETH,
         address token_,
         address launcher_,
         uint256 _checkPoint0,
         uint256 _checkPoint1
-    ) {
+    ) Ownable(_owner) {
         PETH = _pETH;
         _token = token_;
         _launcher = launcher_;
@@ -68,5 +71,9 @@ contract FFPoolCallee is IPoolCallee {
         } else {
             IFF(_token).mint(to, AMOUNT_PER_MINT_2);
         }
+    }
+
+    function enableTransfer() external onlyOwner {
+        IFF(_token).enableTransfer();
     }
 }

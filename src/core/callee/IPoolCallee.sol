@@ -15,4 +15,6 @@ interface IPoolCallee {
     function deploy(address outswapRouter, uint256 deployFeeAmount) external returns (uint256);
 
     function mintTo(address to) external;
+
+    function enableTransfer() external;
 }
