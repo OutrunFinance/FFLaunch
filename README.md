@@ -1,6 +1,8 @@
+**Read this in chinese: [中文](README.cn.md)**
+
 # FFLaunch
 
-The first Fair and Free Launch standard on the EVM, inspired by the inscription.
+The first Fair and Free Launch standard, inspired by the inscription.
 
 Do you remember the recent inscription Summer?
 
