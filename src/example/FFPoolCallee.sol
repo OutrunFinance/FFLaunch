@@ -12,7 +12,7 @@ import "../core/token/interfaces/IFF.sol";
  */
 contract FFPoolCallee is IPoolCallee, Ownable {
     address public immutable PETH;      // Price token
-    address public immutable _token;
+    address public immutable _token;    // Extend FF contract
     address public immutable _launcher;
 
     uint256 public constant AMOUNT_PER_MINT_0 = 20;
