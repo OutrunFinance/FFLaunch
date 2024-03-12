@@ -8,7 +8,7 @@
 
 FFLaunch 将 OutrunDao 的另外两个产品 "Outstake" 和 "Outswap" 组合起来，利用它们的优势创造了史上最公平公正的代币发行方式。
 
-像发行铭文一样发行 ERC20 Token, 用户通过付费 mint token, 在 mint 的过程中 mint 的费用将会和合约中预留的部分 Token 组成交易对在 Outswap 上提供流动性。LP 将锁定一段时间，用户会获得锁定mint费而得到的 YieldToken, 锁定时间到期后用户可以取出自己的 mint 费与预留 token 组成的 LP。这相当于用户免费得获得了这些代币，同时持续参与项目的整个流动性建设过程。
+像发行铭文一样发行 ERC20 Token, 用户通过质押锁定ETH来 mint token, 在 mint 的过程中 质押的产生的 PETH 将会和合约中预留的部分 Token 组成交易对在 Outswap 上提供流动性。LP 将锁定一段时间，用户会获得质押锁定 ETH 而得到的 YieldToken, 锁定时间到期后用户可以取出自己的 PETH 与预留 token 组成的 LP。这相当于用户免费得获得了这些代币，同时持续参与项目的整个流动性建设过程。
 
 对于项目团队来说，他们所募集的资金是就是 LP 锁定期间交易对产生的交易手续费。在基于上述核心基本要求的情况下，我们还为项目方提供了可定制的 callee 接口以支持 FFLaunch 的灵活性, 项目方可以在 Fair And Free 的基础上构建自己独特的 Launch 逻辑。
 
