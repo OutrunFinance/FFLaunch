@@ -87,7 +87,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
             }
         }
 
-        if (currentTime >= endTime) {
+        if (currentTime > endTime) {
             uint256 liquidity = _deployLiquidity(callee);
             unchecked {
                 pool.totalLP += liquidity;
