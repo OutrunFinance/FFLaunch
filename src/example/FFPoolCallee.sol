@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IOutswapV1Router.sol";
 import "../core/callee/IPoolCallee.sol";
 import "../core/token/interfaces/IFF.sol";
+import "../core/launcher/interfaces/IEthFFLauncher.sol";
 
 /**
  * @dev example - $FF pool callee
@@ -19,7 +20,7 @@ contract FFPoolCallee is IPoolCallee, Ownable {
     uint256 public constant AMOUNT_PER_MINT_1 = 15;
     uint256 public constant AMOUNT_PER_MINT_2 = 10;
 
-    uint256 public constant AMOUNT_PER_DEPLOY = 3000;
+    uint256 public constant AMOUNT_BASED_ETH = 3000;
 
     uint256 public checkPoint0;
     uint256 public checkPoint1;
@@ -52,9 +53,11 @@ contract FFPoolCallee is IPoolCallee, Ownable {
      */
     function deploy(address outswapRouter, uint256 deployFeeAmount) external override returns (uint256) {
         require(msg.sender == _launcher, "Only launcher");
-
+        
+        uint256 deployTokenAmount = deployFeeAmount * AMOUNT_BASED_ETH;
+        IFF(_token).mint(address(this), deployTokenAmount);
         (,, uint256 liquidity) = IOutswapV1Router(outswapRouter).addLiquidity(
-            PETH, _token, deployFeeAmount, AMOUNT_PER_DEPLOY, deployFeeAmount, AMOUNT_PER_DEPLOY, _launcher, block.timestamp + 600
+            PETH, _token, deployFeeAmount, deployTokenAmount, deployFeeAmount, deployTokenAmount, _launcher, block.timestamp + 600
         );
 
         return liquidity;
@@ -71,9 +74,5 @@ contract FFPoolCallee is IPoolCallee, Ownable {
         } else {
             IFF(_token).mint(to, AMOUNT_PER_MINT_2);
         }
-    }
-
-    function enableTransfer() external onlyOwner {
-        IFF(_token).enableTransfer();
     }
 }

@@ -1,25 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-interface IFFLauncher {
+interface IEthFFLauncher {
     struct LaunchPool {
         address token;
-        uint256 mintLimit;
-        uint64 lockupDays;
-        uint64 deploySignal;
-        uint64 mintFee;
-        uint32 startTime;
-        uint32 endTime;
+        address callee;
+        uint16 lockupDays;
+        uint16 deploySignal;
+        uint48 startTime;
+        uint48 endTime;
+        uint128 mintFee;
         uint256 totalMintedCount;
+        uint256 totalLP;
+        uint256 totalREY;
+        bool isClosed;
     }
 
     function launchPoolOf(uint256 poolId) external view returns (LaunchPool memory);
 
-    function poolCalleeOf(uint256 poolId) external view returns (address);
-
-    function poolTotalLPsOf(uint256 poolId) external view returns (uint256);
-
     function poolMintedCountsOf(uint256 poolId, address account) external view returns (uint256);
+
+    function isPoolLPClaimedOf(uint256 poolId, address account) external view returns (bool);
 
     function checkMyPoolLP(uint256 poolId) external view returns (uint256);
 
@@ -27,19 +28,15 @@ interface IFFLauncher {
 
     function registerPool(
         address token,
-        uint256 mintLimit,
-        uint64 lockupDays,
-        uint64 deploySignal,
-        uint64 mintFee,
-        uint32 startTime,
-        uint32 endTime
+        address callee,
+        uint16 lockupDays,
+        uint16 deploySignal,
+        uint48 startTime,
+        uint48 endTime,
+        uint128 mintFee
     ) external returns (uint256);
-
-    function registerPoolCallee(uint256 poolId, address calleeAddr) external;
 
     event ClaimPoolLP(uint256 poolId, address account, uint256 lpAmount);
 
     event RegisterPool(uint256 indexed poolId, LaunchPool pool);
-
-    event RegisterPoolCallee(uint256 indexed poolId, address calleeAddr);
 }

@@ -11,6 +11,7 @@ contract FF is IFF {
     string private _symbol;    
     uint8 private _decimals;
     uint256 private _totalSupply;
+    address private _launcher;
     address private _callee;
     bool private _isTransferable;   // Enable after FFLaunch is completed.
 
@@ -22,9 +23,10 @@ contract FF is IFF {
         _;
     }
 
-    constructor(string memory name_, string memory symbol_, address callee_) {
+    constructor(string memory name_, string memory symbol_, address launcher_, address callee_) {
         _name = name_;
         _symbol = symbol_;
+        _launcher = launcher_;
         _callee = callee_;
     }
 
@@ -48,6 +50,10 @@ contract FF is IFF {
         return _totalSupply;
     }
 
+    function launcher() public view returns (address) {
+        return _launcher;
+    }
+
     function callee() public view returns (address) {
         return _callee;
     }
@@ -62,7 +68,7 @@ contract FF is IFF {
 
     function enableTransfer() external {
         require(!_isTransferable, "Already enable transfer");
-        require(msg.sender == _callee, "Permission denied");
+        require(msg.sender == _launcher, "Permission denied");
         _isTransferable = true;
     }
 
