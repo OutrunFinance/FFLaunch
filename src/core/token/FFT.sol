@@ -18,8 +18,8 @@ abstract contract FFT is IFFT {
     mapping(address account => uint256) private _balances;
     mapping(address account => mapping(address spender => uint256)) private _allowances;
 
-    modifier onlyFFPoolCallee() {
-        require(msg.sender == _callee, "Only FF launchPool callee");
+    modifier onlyCallee() {
+        require(msg.sender == _callee, "Only launchPool callee");
         _;
     }
 
@@ -72,11 +72,11 @@ abstract contract FFT is IFFT {
         _isTransferable = true;
     }
 
-    function mint(address _account, uint256 _amount) external override onlyFFPoolCallee {
+    function mint(address _account, uint256 _amount) external override onlyCallee {
         _mint(_account, _amount);
     }
 
-    function burn(address _account, uint256 _amount) external override onlyFFPoolCallee {
+    function burn(address _account, uint256 _amount) external override onlyCallee {
         _burn(_account, _amount);
     }
 
