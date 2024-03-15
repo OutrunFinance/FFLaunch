@@ -16,11 +16,11 @@ contract FFPoolCallee is IPoolCallee, Ownable {
     address public immutable _token;    // Extend FF contract
     address public immutable _launcher;
 
-    uint256 public constant AMOUNT_PER_MINT_0 = 20;
-    uint256 public constant AMOUNT_PER_MINT_1 = 15;
-    uint256 public constant AMOUNT_PER_MINT_2 = 10;
+    uint256 public constant AMOUNT_PER_MINT_0 = 6000;
+    uint256 public constant AMOUNT_PER_MINT_1 = 4500;
+    uint256 public constant AMOUNT_PER_MINT_2 = 3000;
 
-    uint256 public constant AMOUNT_BASED_ETH = 3000;
+    uint256 public constant AMOUNT_BASED_ETH = 4500;
 
     uint256 public checkPoint0;
     uint256 public checkPoint1;
