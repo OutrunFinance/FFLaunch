@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./IOutswapV1Router.sol";
 import "../core/callee/IPoolCallee.sol";
-import "../core/token/interfaces/IFF.sol";
+import "../core/token/interfaces/IFFT.sol";
 import "../core/launcher/interfaces/IEthFFLauncher.sol";
 
 /**
@@ -13,13 +13,12 @@ import "../core/launcher/interfaces/IEthFFLauncher.sol";
  */
 contract FFPoolCallee is IPoolCallee, Ownable {
     address public immutable PETH;      // Price token
-    address public immutable _token;    // Extend FF contract
+    address public immutable _token;
     address public immutable _launcher;
 
     uint256 public constant AMOUNT_PER_MINT_0 = 6000;
     uint256 public constant AMOUNT_PER_MINT_1 = 4500;
     uint256 public constant AMOUNT_PER_MINT_2 = 3000;
-
     uint256 public constant AMOUNT_BASED_ETH = 4500;
 
     uint256 public checkPoint0;
@@ -58,7 +57,7 @@ contract FFPoolCallee is IPoolCallee, Ownable {
      */
     function deploy(address outswapRouter, uint256 deployFundAmount) external override onlyLauncher returns (uint256) {
         uint256 deployTokenAmount = deployFundAmount * AMOUNT_BASED_ETH;
-        IFF(_token).mint(address(this), deployTokenAmount);
+        IFFT(_token).mint(address(this), deployTokenAmount);
         (,, uint256 liquidity) = IOutswapV1Router(outswapRouter).addLiquidity(
             PETH, _token, deployFundAmount, deployTokenAmount, deployFundAmount, deployTokenAmount, _launcher, block.timestamp + 600
         );
@@ -69,11 +68,11 @@ contract FFPoolCallee is IPoolCallee, Ownable {
     function claim(uint256 fund, address receiver) external onlyLauncher {
         uint256 currentTime = block.timestamp;
         if (currentTime <= checkPoint0) {
-            IFF(_token).mint(receiver, fund * AMOUNT_PER_MINT_0);
+            IFFT(_token).mint(receiver, fund * AMOUNT_PER_MINT_0);
         } else if (currentTime <= checkPoint1) {
-            IFF(_token).mint(receiver, fund * AMOUNT_PER_MINT_1);
+            IFFT(_token).mint(receiver, fund * AMOUNT_PER_MINT_1);
         } else {
-            IFF(_token).mint(receiver, fund * AMOUNT_PER_MINT_2);
+            IFFT(_token).mint(receiver, fund * AMOUNT_PER_MINT_2);
         }
     }
 }
