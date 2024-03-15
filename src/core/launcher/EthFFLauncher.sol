@@ -13,7 +13,7 @@ import "../utils/AutoIncrementId.sol";
 import "../utils/OutswapV1Library.sol";
 import "../utils/IRETHStakeManager.sol";
 import "../callee/IPoolCallee.sol";
-import "../token/interfaces/IFF.sol";
+import "../token/interfaces/IFFT.sol";
 
 contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
     using SafeERC20 for IERC20;
