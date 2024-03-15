@@ -10,9 +10,9 @@ interface IPoolCallee {
     function launcher() external view returns (address);
 
     /**
-     * @dev LP need to send to FFLauncher，PETH is the price token
+     * @dev LP need to send to FFLauncher
      */  
-    function deploy(address outswapRouter, uint256 deployFeeAmount) external returns (uint256);
+    function deploy(address outswapRouter, uint256 deployFundAmount) external returns (uint256);
 
-    function mintTo(address to) external;
+    function claim(uint256 fund, address receiver) external;
 }

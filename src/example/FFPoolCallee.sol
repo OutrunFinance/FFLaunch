@@ -25,6 +25,11 @@ contract FFPoolCallee is IPoolCallee, Ownable {
     uint256 public checkPoint0;
     uint256 public checkPoint1;
 
+    modifier onlyLauncher() {
+        require(msg.sender == _launcher, "Only launcher");
+        _;
+    }
+
     constructor(
         address _owner,
         address _pETH,
@@ -51,28 +56,24 @@ contract FFPoolCallee is IPoolCallee, Ownable {
     /**
      * LP need to send to FFLaunchLpVault
      */
-    function deploy(address outswapRouter, uint256 deployFeeAmount) external override returns (uint256) {
-        require(msg.sender == _launcher, "Only launcher");
-        
-        uint256 deployTokenAmount = deployFeeAmount * AMOUNT_BASED_ETH;
+    function deploy(address outswapRouter, uint256 deployFundAmount) external override onlyLauncher returns (uint256) {
+        uint256 deployTokenAmount = deployFundAmount * AMOUNT_BASED_ETH;
         IFF(_token).mint(address(this), deployTokenAmount);
         (,, uint256 liquidity) = IOutswapV1Router(outswapRouter).addLiquidity(
-            PETH, _token, deployFeeAmount, deployTokenAmount, deployFeeAmount, deployTokenAmount, _launcher, block.timestamp + 600
+            PETH, _token, deployFundAmount, deployTokenAmount, deployFundAmount, deployTokenAmount, _launcher, block.timestamp + 600
         );
 
         return liquidity;
     }
 
-    function mintTo(address to) external {
-        require(msg.sender == _launcher, "Only launcher");
-
+    function claim(uint256 fund, address receiver) external onlyLauncher {
         uint256 currentTime = block.timestamp;
         if (currentTime <= checkPoint0) {
-            IFF(_token).mint(to, AMOUNT_PER_MINT_0);
+            IFF(_token).mint(receiver, fund * AMOUNT_PER_MINT_0);
         } else if (currentTime <= checkPoint1) {
-            IFF(_token).mint(to, AMOUNT_PER_MINT_1);
+            IFF(_token).mint(receiver, fund * AMOUNT_PER_MINT_1);
         } else {
-            IFF(_token).mint(to, AMOUNT_PER_MINT_2);
+            IFF(_token).mint(receiver, fund * AMOUNT_PER_MINT_2);
         }
     }
 }
