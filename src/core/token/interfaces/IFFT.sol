@@ -8,7 +8,7 @@ import "./IERC20Errors.sol";
 /**
  * @title FF Token Standard Interface
  */
-interface IFF is IERC20, IERC20Errors {
+interface IFFT is IERC20, IERC20Errors {
     function name() external view returns (string memory);
 
     function symbol() external view returns (string memory);

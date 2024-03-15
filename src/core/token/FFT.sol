@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.24;
 
-import "./interfaces/IFF.sol";
+import "./interfaces/IFFT.sol";
 
 /**
  * @title FF Token Standard 
  */
-contract FF is IFF {
+abstract contract FFT is IFFT {
     string private _name;  
     string private _symbol;    
     uint8 private _decimals;
