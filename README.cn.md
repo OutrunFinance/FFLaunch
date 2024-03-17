@@ -16,9 +16,22 @@ FFLaunch 将 OutrunDao 的另外两个产品 "Outstake" 和 "Outswap" 组合起�
 
 ## 事件生命周期
 
-在 FFLaunch 事件的生命周期中一共有 3 个实体，6 个阶段。  
-实体：1. 用户 2. Outrun FFLauncher 3. 第三方团队  
-阶段：1. 申请阶段 2. 审核阶段 3. Deposit 阶段 4. Claim 阶段 5. 开放交易阶段 6. LP 解锁阶段
+在 FFLaunch 事件的生命周期中一共有 3 个实体，6 个阶段。
+
+实体：
+
+1. 用户  
+2. Outrun FFLauncher  
+3. 第三方团队
+
+阶段：
+
+1. 申请阶段  
+2. 审核阶段  
+3. Deposit 阶段  
+4. Claim 阶段  
+5. 开放交易阶段  
+6. LP 解锁阶段
 
 ### 申请阶段
 

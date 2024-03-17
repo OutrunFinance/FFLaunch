@@ -24,22 +24,22 @@ Entities:
 
 1. Investor  
 2. Outrun FFLauncher  
-3. Third-party team  
+3. Third-party team
 
 Stages:
 
-1. Application Stage  
+1. Apply Stage  
 2. Audit Stage  
 3. Deposit Stage  
 4. Claim Stage  
 5. Open Trading Stage  
-6. LP Settlement Stage  
+6. LP Settlement Stage
 
-### Application Stage
+### Apply Stage
 
 + Third-party team develops Callee and Token contracts. The Callee contract must implement the IPoolCallee interface, while the Token contract should inherit from the FFT contract (with the ability to override certain methods).
 
-+ Third-party team applies to list on Outrun FFLauncher, submitting detailed project and team information along with the Callee and Token contracts. Continuous communication with the OutrunDao audit team is required. 
++ Third-party team applies to list on Outrun FFLauncher, submitting detailed project and team information along with the Callee and Token contracts. Continuous communication with the OutrunDao audit team is required.
 
 ### Audit Stage
 
