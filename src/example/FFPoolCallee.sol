@@ -3,7 +3,6 @@ pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "./IOutswapV1Router.sol";
 import "../core/callee/IPoolCallee.sol";
 import "../core/token/interfaces/IFFT.sol";
 import "../core/launcher/interfaces/IEthFFLauncher.sol";
@@ -53,19 +52,14 @@ contract FFPoolCallee is IPoolCallee, Ownable {
     }
 
     /**
-     * @dev LP need to send to FFLauncher, only FFLauncher can call this function
-     * @param outswapRouter Address of OutswapRouter
+     * @dev Get deployed token, send to FFLauncher, Only FFLauncher can call this function
      * @param deployFundAmount Amount of deployed fund
      */
-    function deploy(address outswapRouter, uint256 deployFundAmount) external override onlyLauncher returns (uint256) {
+    function getDeployedToken(uint256 deployFundAmount) external override onlyLauncher returns (uint256) {
         uint256 deployTokenAmount = deployFundAmount * AMOUNT_BASED_ETH;
-        address _token = token();
-        IFFT(_token).mint(address(this), deployTokenAmount);
-        (,, uint256 liquidity) = IOutswapV1Router(outswapRouter).addLiquidity(
-            PETH, _token, deployFundAmount, deployTokenAmount, deployFundAmount, deployTokenAmount, launcher(), block.timestamp + 600
-        );
+        IFFT(token()).mint(launcher(), deployTokenAmount);
 
-        return liquidity;
+        return deployTokenAmount;
     }
 
     /**
