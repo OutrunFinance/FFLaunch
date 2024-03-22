@@ -53,7 +53,9 @@ contract FFPoolCallee is IPoolCallee, Ownable {
     }
 
     /**
-     * LP need to send to FFLaunchLpVault
+     * @dev LP need to send to FFLauncher, only FFLauncher can call this function
+     * @param outswapRouter Address of OutswapRouter
+     * @param deployFundAmount Amount of deployed fund
      */
     function deploy(address outswapRouter, uint256 deployFundAmount) external override onlyLauncher returns (uint256) {
         uint256 deployTokenAmount = deployFundAmount * AMOUNT_BASED_ETH;
@@ -66,19 +68,28 @@ contract FFPoolCallee is IPoolCallee, Ownable {
         return liquidity;
     }
 
-    function claim(uint256 fund, address receiver) external onlyLauncher {
+    /**
+     * @dev Claim the token, only FFLauncher can call this function
+     * @param deployFundAmount Amount of deployed fund
+     * @param receiver Investor address to receive the token
+     */
+    function claim(uint256 deployFundAmount, address receiver) external onlyLauncher {
         uint256 currentTime = block.timestamp;
         address _token = token();
         if (currentTime <= checkPoint0) {
-            IFFT(_token).mint(receiver, fund * AMOUNT_PER_MINT_0);
+            IFFT(_token).mint(receiver, deployFundAmount * AMOUNT_PER_MINT_0);
         } else if (currentTime <= checkPoint1) {
-            IFFT(_token).mint(receiver, fund * AMOUNT_PER_MINT_1);
+            IFFT(_token).mint(receiver, deployFundAmount * AMOUNT_PER_MINT_1);
         } else {
-            IFFT(_token).mint(receiver, fund * AMOUNT_PER_MINT_2);
+            IFFT(_token).mint(receiver, deployFundAmount * AMOUNT_PER_MINT_2);
         }
     }
 
-    function claimMakerFee(uint256 poolId, address to) external onlyOwner {
-        IEthFFLauncher(launcher()).claimPoolMakerFee(poolId, to);
+    /**
+     * @dev Claim maker fee by FFLauncher
+     * @param receiver Address to receive maker fee
+     */
+    function claimMakerFee(uint256 poolId, address receiver) external onlyOwner {
+        IEthFFLauncher(launcher()).claimPoolMakerFee(poolId, receiver);
     }
 }
