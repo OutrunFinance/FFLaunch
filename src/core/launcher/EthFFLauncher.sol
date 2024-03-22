@@ -26,8 +26,9 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
     address public immutable outswapV1Factory;
 
     mapping(uint256 poolID => LaunchPool) private _launchPools;
-    mapping(uint256 poolID => mapping(address account => uint256)) private _poolFunds;
+    mapping(uint256 poolID => uint256) private _tempFund;
     mapping(uint256 poolID => mapping(address account => uint256)) private _tempFundPool;
+    mapping(uint256 poolID => mapping(address account => uint256)) private _poolFunds;
     mapping(uint256 poolID => mapping(address account => bool)) private _isPoolLPClaimed;
 
     constructor(
@@ -47,6 +48,10 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
 
     function launchPoolOf(uint256 poolId) external view override returns (LaunchPool memory) {
         return _launchPools[poolId];
+    }
+
+    function tempFundOf(uint256 poolId) external view override returns (uint256) {
+        return _tempFund[poolId];
     }
 
     function tempFundPoolOf(uint256 poolId, address account) external view override returns (uint256) {
@@ -80,6 +85,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
         require(currentTime > startTime && currentTime < endTime, "Invalid time");
 
         unchecked {
+            _tempFund[poolId] += mintFee;
             _tempFundPool[poolId][msgSender] += mintFee;
         }
     }
@@ -97,7 +103,10 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
         require(fund > 0, "No fund");
 
         if (currentTime < claimDeadline) {
+            _tempFund[poolId] -= fund;
             _tempFundPool[poolId][msgSender] = 0;
+            
+            // TODO 将一半的ETH换成USDB
             IRETH(RETH).deposit{value: fund}();
             IERC20(RETH).approve(RETHStakeManager, fund);
             (uint256 amountInPETH, ) = IRETHStakeManager(RETHStakeManager).stake(fund, lockupDays, msgSender, address(this), msgSender);
@@ -113,6 +122,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
                 _poolFunds[poolId][msgSender] += amountInPETH;
             }
         } else {
+            _tempFund[poolId] -= fund;
             _tempFundPool[poolId][msgSender] = 0;
             Address.sendValue(payable(msgSender), fund);
         }

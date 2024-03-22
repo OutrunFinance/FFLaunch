@@ -16,6 +16,8 @@ interface IEthFFLauncher {
 
     function launchPoolOf(uint256 poolId) external view returns (LaunchPool memory);
 
+    function tempFundOf(uint256 poolId) external view returns (uint256);
+
     function tempFundPoolOf(uint256 poolId, address account) external view returns (uint256);
 
     function isPoolLPClaimedOf(uint256 poolId, address account) external view returns (bool);
