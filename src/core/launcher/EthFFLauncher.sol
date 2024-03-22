@@ -112,7 +112,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
             IERC20(RETH).approve(RETHStakeManager, fund);
             (uint256 amountInPETH, ) = IRETHStakeManager(RETHStakeManager).stake(fund, lockupDays, msgSender, address(this), msgSender);
 
-            // Calling the registered Callee contract to deploy and mint
+            // Calling the registered Callee contract to get deployed token and mint token to user
             address callee = pool.callee;
             uint256 deployTokenAmount = IPoolCallee(callee).getDeployedToken(amountInPETH);
 
