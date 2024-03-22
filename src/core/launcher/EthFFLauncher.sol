@@ -11,6 +11,7 @@ import "./interfaces/IEthFFLauncher.sol";
 import "../utils/IRETH.sol";
 import "../utils/AutoIncrementId.sol";
 import "../utils/OutswapV1Library.sol";
+import "../utils/IOutswapV1Router.sol";
 import "../utils/IOutswapV1Pair.sol";
 import "../utils/IRETHStakeManager.sol";
 import "../callee/IPoolCallee.sol";
@@ -113,8 +114,10 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
 
             // Calling the registered Callee contract to deploy and mint
             address callee = pool.callee;
-            IERC20(PETH).safeTransfer(callee, amountInPETH);
-            uint256 liquidity = IPoolCallee(callee).deploy(outswapV1Router, amountInPETH);
+            uint256 deployTokenAmount = IPoolCallee(callee).getDeployedToken(amountInPETH);
+            (,, uint256 liquidity) = IOutswapV1Router(outswapV1Router).addLiquidity(
+                PETH, pool.token, amountInPETH, deployTokenAmount, amountInPETH, deployTokenAmount, address(this), block.timestamp + 600
+            );
             IPoolCallee(callee).claim(amountInPETH, msgSender);
             unchecked {
                 pool.totalLP += uint128(liquidity);

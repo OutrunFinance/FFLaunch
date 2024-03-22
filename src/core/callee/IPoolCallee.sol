@@ -10,11 +10,10 @@ interface IPoolCallee {
     function launcher() external view returns (address);
 
     /**
-     * @dev LP need to send to FFLauncher, only FFLauncher can call this function
-     * @param outswapRouter Address of OutswapRouter
+     * @dev Get deployed token, send to FFLauncher, Only FFLauncher can call this function
      * @param deployFundAmount Amount of deployed fund
      */
-    function deploy(address outswapRouter, uint256 deployFundAmount) external returns (uint256);
+    function getDeployedToken(uint256 deployFundAmount) external returns (uint256);
 
     /**
      * @dev Claim the token, only FFLauncher can call this function
