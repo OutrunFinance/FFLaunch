@@ -30,7 +30,7 @@ interface IEthFFLauncher {
 
     function claimPoolLP(uint256 poolId) external;
 
-    function claimPoolMakerFee(uint256 poolId, address to) external;
+    function claimPoolMakerFee(uint256 poolId, address receiver) external;
 
     function registerPool(
         address token,
