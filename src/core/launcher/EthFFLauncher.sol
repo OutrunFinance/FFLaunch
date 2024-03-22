@@ -115,8 +115,12 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
             // Calling the registered Callee contract to deploy and mint
             address callee = pool.callee;
             uint256 deployTokenAmount = IPoolCallee(callee).getDeployedToken(amountInPETH);
+
+            address token = pool.token;
+            IERC20(PETH).approve(outswapV1Router, amountInPETH);
+            IERC20(token).approve(outswapV1Router, deployTokenAmount);
             (,, uint256 liquidity) = IOutswapV1Router(outswapV1Router).addLiquidity(
-                PETH, pool.token, amountInPETH, deployTokenAmount, amountInPETH, deployTokenAmount, address(this), block.timestamp + 600
+                PETH, token, amountInPETH, deployTokenAmount, amountInPETH, deployTokenAmount, address(this), block.timestamp + 600
             );
             IPoolCallee(callee).claim(amountInPETH, msgSender);
             unchecked {
