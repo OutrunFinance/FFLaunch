@@ -15,4 +15,6 @@ interface IPoolCallee {
     function deploy(address outswapRouter, uint256 deployFundAmount) external returns (uint256);
 
     function claim(uint256 fund, address receiver) external;
+
+    function claimMakerFee(uint256 poolId, address to) external;
 }

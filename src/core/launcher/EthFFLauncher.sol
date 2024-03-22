@@ -11,6 +11,7 @@ import "./interfaces/IEthFFLauncher.sol";
 import "../utils/IRETH.sol";
 import "../utils/AutoIncrementId.sol";
 import "../utils/OutswapV1Library.sol";
+import "../utils/IOutswapV1Pair.sol";
 import "../utils/IRETHStakeManager.sol";
 import "../callee/IPoolCallee.sol";
 import "../token/interfaces/IFFT.sol";
@@ -25,10 +26,10 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
     address public immutable outswapV1Router;
     address public immutable outswapV1Factory;
 
-    mapping(uint256 poolID => LaunchPool) private _launchPools;
     mapping(uint256 poolID => uint256) private _tempFund;
-    mapping(uint256 poolID => mapping(address account => uint256)) private _tempFundPool;
+    mapping(uint256 poolID => LaunchPool) private _launchPools;
     mapping(uint256 poolID => mapping(address account => uint256)) private _poolFunds;
+    mapping(uint256 poolID => mapping(address account => uint256)) private _tempFundPool;
     mapping(uint256 poolID => mapping(address account => bool)) private _isPoolLPClaimed;
 
     constructor(
@@ -46,23 +47,23 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
         RETHStakeManager = _RETHStakeManager;
     }
 
-    function launchPoolOf(uint256 poolId) external view override returns (LaunchPool memory) {
-        return _launchPools[poolId];
-    }
-
-    function tempFundOf(uint256 poolId) external view override returns (uint256) {
+    function tempFund(uint256 poolId) external view override returns (uint256) {
         return _tempFund[poolId];
     }
 
-    function tempFundPoolOf(uint256 poolId, address account) external view override returns (uint256) {
+    function launchPool(uint256 poolId) external view override returns (LaunchPool memory) {
+        return _launchPools[poolId];
+    }
+
+    function tempFundPool(uint256 poolId, address account) external view override returns (uint256) {
         return _tempFundPool[poolId][account];
     }
 
-    function isPoolLPClaimedOf(uint256 poolId, address account) external view override returns (bool) {
+    function isPoolLPClaimed(uint256 poolId, address account) external view override returns (bool) {
         return _isPoolLPClaimed[poolId][account];
     }
 
-    function checkMyPoolLP(uint256 poolId) external view override returns (uint256) {
+    function viewMyPoolLP(uint256 poolId) external view override returns (uint256) {
         LaunchPool storage pool = _launchPools[poolId];
         return pool.totalLP * _poolFunds[poolId][msg.sender] / pool.totalActualFund;
     }
@@ -106,7 +107,6 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
             _tempFund[poolId] -= fund;
             _tempFundPool[poolId][msgSender] = 0;
             
-            // TODO 将一半的ETH换成USDB
             IRETH(RETH).deposit{value: fund}();
             IERC20(RETH).approve(RETHStakeManager, fund);
             (uint256 amountInPETH, ) = IRETHStakeManager(RETHStakeManager).stake(fund, lockupDays, msgSender, address(this), msgSender);
@@ -131,7 +131,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
     /**
      * @dev Claim your LP by pooId when LP unlocked
      */
-    function claimPoolLP(uint256 poolId) external {
+    function claimPoolLP(uint256 poolId) external override {
         LaunchPool storage pool = _launchPools[poolId];
         address msgSender = msg.sender;
         uint256 fund = _poolFunds[poolId][msgSender];
@@ -144,6 +144,21 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
         IERC20(pair).safeTransfer(msgSender, lpAmount);
 
         emit ClaimPoolLP(poolId, msgSender, lpAmount);
+    }
+
+    /**
+     * @dev Claim your LP by pooId when LP unlocked
+     */
+    function claimPoolMakerFee(uint256 poolId, address to) external override {
+        address msgSender = msg.sender;
+        LaunchPool storage pool = _launchPools[poolId];
+        require(msgSender == pool.callee && block.timestamp > pool.claimDeadline, "Permission denied");
+
+        address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, PETH);
+        uint256 makerFee = IOutswapV1Pair(pair).claimMakerFee();
+        IERC20(pair).safeTransfer(to, makerFee);
+
+        emit ClaimPoolMakerFee(poolId, to, makerFee);
     }
 
     /**
@@ -165,17 +180,16 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
         uint128 mintFee,
         uint128 claimDeadline,
         uint128 lockupDays
-    ) external override onlyOwner returns (uint256) {
+    ) external override onlyOwner returns (uint256 poolId) {
         uint256 currentTime = block.timestamp;
         require(token != address(0) && startTime < currentTime && endTime > currentTime, "Invalid poolInfo");
         IPoolCallee poolCallee = IPoolCallee(callee);
         require(poolCallee.token() == token && poolCallee.launcher() == address(this), "Invalid callee");
 
         LaunchPool memory pool = LaunchPool(token, callee, startTime, endTime, mintFee, claimDeadline, lockupDays, 0, 0);
-        uint256 poolId = nextId();
+        poolId = nextId();
         _launchPools[poolId] = pool;
 
         emit RegisterPool(poolId, pool);
-        return poolId;
     }
 }

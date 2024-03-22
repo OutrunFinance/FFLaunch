@@ -14,19 +14,23 @@ interface IEthFFLauncher {
         uint128 totalLP;
     }
 
-    function launchPoolOf(uint256 poolId) external view returns (LaunchPool memory);
+    function launchPool(uint256 poolId) external view returns (LaunchPool memory);
 
-    function tempFundOf(uint256 poolId) external view returns (uint256);
+    function tempFund(uint256 poolId) external view returns (uint256);
 
-    function tempFundPoolOf(uint256 poolId, address account) external view returns (uint256);
+    function tempFundPool(uint256 poolId, address account) external view returns (uint256);
 
-    function isPoolLPClaimedOf(uint256 poolId, address account) external view returns (bool);
+    function isPoolLPClaimed(uint256 poolId, address account) external view returns (bool);
 
-    function checkMyPoolLP(uint256 poolId) external view returns (uint256);
+    function viewMyPoolLP(uint256 poolId) external view returns (uint256);
 
     function deposit(uint256 poolId) external payable;
 
     function claimTokenOrFund(uint256 poolId) external;
+
+    function claimPoolLP(uint256 poolId) external;
+
+    function claimPoolMakerFee(uint256 poolId, address to) external;
 
     function registerPool(
         address token,
@@ -36,9 +40,11 @@ interface IEthFFLauncher {
         uint128 mintFee,
         uint128 claimDeadline,
         uint128 lockupDays
-    ) external returns (uint256);
+    ) external returns (uint256 poolId);
 
-    event ClaimPoolLP(uint256 poolId, address account, uint256 lpAmount);
+    event ClaimPoolLP(uint256 indexed poolId, address account, uint256 lpAmount);
+
+    event ClaimPoolMakerFee(uint256 indexed poolId, address to, uint256 makerFee);
 
     event RegisterPool(uint256 indexed poolId, LaunchPool pool);
 }
