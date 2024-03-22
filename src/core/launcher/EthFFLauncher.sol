@@ -148,17 +148,18 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
 
     /**
      * @dev Claim your LP by pooId when LP unlocked
+     * @param receiver Address to receive maker fee
      */
-    function claimPoolMakerFee(uint256 poolId, address to) external override {
+    function claimPoolMakerFee(uint256 poolId, address receiver) external override {
         address msgSender = msg.sender;
         LaunchPool storage pool = _launchPools[poolId];
         require(msgSender == pool.callee && block.timestamp > pool.claimDeadline, "Permission denied");
 
         address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, PETH);
         uint256 makerFee = IOutswapV1Pair(pair).claimMakerFee();
-        IERC20(pair).safeTransfer(to, makerFee);
+        IERC20(pair).safeTransfer(receiver, makerFee);
 
-        emit ClaimPoolMakerFee(poolId, to, makerFee);
+        emit ClaimPoolMakerFee(poolId, receiver, makerFee);
     }
 
     /**
