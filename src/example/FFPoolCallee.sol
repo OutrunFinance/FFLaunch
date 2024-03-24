@@ -6,11 +6,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "../core/callee/IPoolCallee.sol";
 import "../core/token/interfaces/IFFT.sol";
 import "../core/launcher/interfaces/IEthFFLauncher.sol";
+import "../blast/GasManagerable.sol";
 
 /**
  * @dev example - $FF pool callee
  */
-contract FFPoolCallee is IPoolCallee, Ownable {
+contract FFPoolCallee is IPoolCallee, Ownable, GasManagerable {
     address public immutable PETH;      // Price token
     address public immutable TOKEN;
     address public immutable LAUNCHER;
@@ -33,9 +34,10 @@ contract FFPoolCallee is IPoolCallee, Ownable {
         address _pETH,
         address _token,
         address _launcher,
+        address _gasManager,
         uint256 _checkPoint0,
         uint256 _checkPoint1
-    ) Ownable(_owner) {
+    ) Ownable(_owner) GasManagerable(_gasManager) {
         PETH = _pETH;
         TOKEN = _token;
         LAUNCHER = _launcher;
