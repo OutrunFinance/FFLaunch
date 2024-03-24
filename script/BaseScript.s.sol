@@ -9,8 +9,8 @@ abstract contract BaseScript is Script {
     string internal mnemonic;
     
     function setUp() public virtual {
-        privateKey = vm.envUint("PRIVATE_KEY");
         //mnemonic = vm.envString("MNEMONIC");
+        privateKey = vm.envUint("PRIVATE_KEY");
         deployer = vm.rememberKey(privateKey);
     }
 
