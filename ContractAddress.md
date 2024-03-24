@@ -1,3 +1,3 @@
 ## Blast Sepolia
 
-EthFFLauncher: 0xd8a7Ff5dAc3c6f2c81c3DFAbb3edaa2fE795762E
+EthFFLauncher: 0x0f539A59306BbAbd75E41abF452052326A5cF029
