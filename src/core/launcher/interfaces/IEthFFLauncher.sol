@@ -7,16 +7,16 @@ interface IEthFFLauncher {
         address callee;
         uint64 startTime;
         uint64 endTime;
-        uint128 mintFee;
+        uint128 maxFee;
         uint128 claimDeadline;
         uint128 lockupDays;
         uint128 totalActualFund;
         uint128 totalLP;
     }
 
-    function launchPool(uint256 poolId) external view returns (LaunchPool memory);
-
     function tempFund(uint256 poolId) external view returns (uint256);
+
+    function launchPool(uint256 poolId) external view returns (LaunchPool memory);
 
     function tempFundPool(uint256 poolId, address account) external view returns (uint256);
 
@@ -24,7 +24,7 @@ interface IEthFFLauncher {
 
     function viewMyPoolLP(uint256 poolId) external view returns (uint256);
 
-    function deposit(uint256 poolId) external payable;
+    function deposit() external payable;
 
     function claimTokenOrFund(uint256 poolId) external;
 

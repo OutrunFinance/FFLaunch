@@ -73,24 +73,24 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
 
     /**
      * @dev Deposit temporary fund
-     * @param poolId launch pool Id
      */
-    function deposit(uint256 poolId) external payable override {
+    function deposit() public payable override {
         address msgSender = msg.sender;
         require(msgSender == tx.origin, "Only EOA account");
 
         uint256 msgValue = msg.value;
+        uint256 poolId = id;
         LaunchPool storage pool = _launchPools[poolId];
         uint64 startTime = pool.startTime;
         uint64 endTime = pool.endTime;
-        uint128 mintFee = pool.mintFee;
+        uint128 maxFee = pool.maxFee;
         uint256 currentTime = block.timestamp;
-        require(msgValue == mintFee, "Invalid vaule");
+        require(msgValue <= maxFee, "Invalid vaule");
         require(currentTime > startTime && currentTime < endTime, "Invalid time");
 
         unchecked {
-            _tempFund[poolId] += mintFee;
-            _tempFundPool[poolId][msgSender] += mintFee;
+            _tempFund[poolId] += msgValue;
+            _tempFundPool[poolId][msgSender] += msgValue;
         }
     }
 
@@ -177,7 +177,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
      * @param callee Callee address
      * @param startTime StartTime of launchpool
      * @param endTime EndTime of launchpool
-     * @param mintFee Cost per mint
+     * @param maxFee Max fee per deposit
      * @param claimDeadline Deadline of claim token
      * @param lockupDays LockupDay of LP
      * @notice The callee code should be kept as concise as possible and undergo auditing to prevent malicious behavior.
@@ -187,7 +187,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         address callee,
         uint64 startTime,
         uint64 endTime,
-        uint128 mintFee,
+        uint128 maxFee,
         uint128 claimDeadline,
         uint128 lockupDays
     ) external override onlyOwner returns (uint256 poolId) {
@@ -195,11 +195,18 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         require(token != address(0) && startTime < currentTime && endTime > currentTime, "Invalid poolInfo");
         IPoolCallee poolCallee = IPoolCallee(callee);
         require(poolCallee.token() == token && poolCallee.launcher() == address(this), "Invalid callee");
+        uint256 currentPoolId = id;
+        LaunchPool storage currentPool = _launchPools[currentPoolId];
+        require(currentTime > currentPool.claimDeadline, "Last pool ongoing");
 
-        LaunchPool memory pool = LaunchPool(token, callee, startTime, endTime, mintFee, claimDeadline, lockupDays, 0, 0);
+        LaunchPool memory pool = LaunchPool(token, callee, startTime, endTime, maxFee, claimDeadline, lockupDays, 0, 0);
         poolId = nextId();
         _launchPools[poolId] = pool;
 
         emit RegisterPool(poolId, pool);
+    }
+
+    receive() external payable {
+        deposit();
     }
 }
