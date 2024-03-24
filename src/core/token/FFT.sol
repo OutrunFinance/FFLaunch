@@ -2,18 +2,19 @@
 pragma solidity ^0.8.24;
 
 import "./interfaces/IFFT.sol";
+import "../../blast/GasManagerable.sol";
 
 /**
- * @title FF Token Standard 
+ * @title FF Token Standard
  */
-abstract contract FFT is IFFT {
-    string private _name;  
-    string private _symbol;    
+abstract contract FFT is IFFT, GasManagerable {
+    string private _name;
+    string private _symbol;
     uint8 private _decimals;
     uint256 private _totalSupply;
     address private _launcher;
     address private _callee;
-    bool private _isTransferable;   // Enable after FFLaunch is completed.
+    bool private _isTransferable; // Enable after FFLaunch is completed.
 
     mapping(address account => uint256) private _balances;
     mapping(address account => mapping(address spender => uint256)) private _allowances;
@@ -23,7 +24,13 @@ abstract contract FFT is IFFT {
         _;
     }
 
-    constructor(string memory name_, string memory symbol_, address launcher_, address callee_) {
+    constructor(
+        string memory name_, 
+        string memory symbol_, 
+        address launcher_, 
+        address callee_, 
+        address _gasManager
+    ) GasManagerable(_gasManager) {
         _name = name_;
         _symbol = symbol_;
         _launcher = launcher_;

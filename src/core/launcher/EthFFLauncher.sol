@@ -16,8 +16,9 @@ import "../utils/IOutswapV1Pair.sol";
 import "../utils/IRETHStakeManager.sol";
 import "../callee/IPoolCallee.sol";
 import "../token/interfaces/IFFT.sol";
+import "../../blast/GasManagerable.sol";
 
-contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
+contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrementId {
     using SafeERC20 for IERC20;
 
     uint256 public constant DAY = 24 * 3600;
@@ -37,10 +38,11 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, AutoIncrementId {
         address _owner,
         address _rETH,
         address _pETH,
+        address _gasManager,
         address _outswapV1Router,
         address _outswapV1Factory,
         address _RETHStakeManager
-    ) Ownable(_owner) {
+    ) Ownable(_owner) GasManagerable(_gasManager) {
         RETH = _rETH;
         PETH = _pETH;
         outswapV1Router = _outswapV1Router;
