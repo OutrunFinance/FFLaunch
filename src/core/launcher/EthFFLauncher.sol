@@ -144,7 +144,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         LaunchPool storage pool = _launchPools[poolId];
         address token = pool.token;
         require(block.timestamp >= pool.claimDeadline, "Pool not closed");
-        require(!IFFT(token).enableTransfer(), "Already enable transfer");
+        require(!IFFT(token).transferable(), "Already enable transfer");
         IFFT(token).enableTransfer();
     }
 
