@@ -138,6 +138,17 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
     }
 
     /**
+     * @dev Enable transfer about token of pool
+     */
+    function enablePoolTokenTransfer(uint256 poolId) external override {
+        LaunchPool storage pool = _launchPools[poolId];
+        address token = pool.token;
+        require(block.timestamp >= pool.claimDeadline, "Pool not closed");
+        require(!IFFT(token).enableTransfer(), "Already enable transfer");
+        IFFT(token).enableTransfer();
+    }
+
+    /**
      * @dev Claim your LP by pooId when LP unlocked
      */
     function claimPoolLP(uint256 poolId) external override {
