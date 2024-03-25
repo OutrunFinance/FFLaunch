@@ -17,6 +17,8 @@ interface IFFT is IERC20, IERC20Errors {
 
     function totalSupply() external view returns (uint256);
 
+    function launcher() external view returns (address);
+
     function callee() external view returns (address);
 
     function balanceOf(address account) external view returns (uint256);

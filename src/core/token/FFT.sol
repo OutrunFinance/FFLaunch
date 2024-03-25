@@ -41,39 +41,43 @@ abstract contract FFT is IFFT, GasManagerable {
         return msg.sender;
     }
 
-    function name() public view returns (string memory) {
+    function name() public view override returns (string memory) {
         return _name;
     }
 
-    function symbol() public view returns (string memory) {
+    function symbol() public view override returns (string memory) {
         return _symbol;
     }
 
-    function decimals() public view returns (uint8) {
+    function decimals() public view override returns (uint8) {
         return _decimals;
     }
 
-    function totalSupply() public view returns (uint256) {
+    function totalSupply() public view override returns (uint256) {
         return _totalSupply;
     }
 
-    function launcher() public view returns (address) {
+    function launcher() public view override returns (address) {
         return _launcher;
     }
 
-    function callee() public view returns (address) {
+    function callee() public view override returns (address) {
         return _callee;
     }
 
-    function balanceOf(address account) public view returns (uint256) {
+    function balanceOf(address account) public view override returns (uint256) {
         return _balances[account];
     }
 
-    function transferable() external view returns (bool) {
+    function transferable() external view override returns (bool) {
         return _isTransferable;
     }
 
-    function enableTransfer() external {
+    function allowance(address owner, address spender) public view override returns (uint256) {
+        return _allowances[owner][spender];
+    }
+
+    function enableTransfer() external override {
         require(!_isTransferable, "Already enable transfer");
         require(msg.sender == _launcher, "Permission denied");
         _isTransferable = true;
@@ -87,23 +91,19 @@ abstract contract FFT is IFFT, GasManagerable {
         _burn(_account, _amount);
     }
 
-    function transfer(address to, uint256 value) public returns (bool) {
+    function transfer(address to, uint256 value) public override returns (bool) {
         address owner = _msgSender();
         _transfer(owner, to, value);
         return true;
     }
 
-    function allowance(address owner, address spender) public view returns (uint256) {
-        return _allowances[owner][spender];
-    }
-
-    function approve(address spender, uint256 value) public returns (bool) {
+    function approve(address spender, uint256 value) public override returns (bool) {
         address owner = _msgSender();
         _approve(owner, spender, value);
         return true;
     }
 
-    function transferFrom(address from, address to, uint256 value) public returns (bool) {
+    function transferFrom(address from, address to, uint256 value) public override returns (bool) {
         address spender = _msgSender();
         _spendAllowance(from, spender, value);
         _transfer(from, to, value);
