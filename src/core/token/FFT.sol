@@ -3,11 +3,12 @@ pragma solidity ^0.8.24;
 
 import "./interfaces/IFFT.sol";
 import "../../blast/GasManagerable.sol";
+import "../utils/Initializable.sol";
 
 /**
  * @title FF Token Standard
  */
-abstract contract FFT is IFFT, GasManagerable {
+abstract contract FFT is IFFT, GasManagerable, Initializable {
     string private _name;
     string private _symbol;
     uint8 private _decimals;
@@ -28,13 +29,11 @@ abstract contract FFT is IFFT, GasManagerable {
         string memory name_, 
         string memory symbol_, 
         address launcher_, 
-        address callee_, 
         address _gasManager
     ) GasManagerable(_gasManager) {
         _name = name_;
         _symbol = symbol_;
         _launcher = launcher_;
-        _callee = callee_;
     }
 
     function _msgSender() internal view returns (address) {
@@ -75,6 +74,10 @@ abstract contract FFT is IFFT, GasManagerable {
 
     function allowance(address owner, address spender) public view override returns (uint256) {
         return _allowances[owner][spender];
+    }
+
+    function initialize(address callee_) external override initializer {
+        _callee = callee_; 
     }
 
     function enableTransfer() external override {

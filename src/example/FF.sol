@@ -7,5 +7,5 @@ import "../core/token/FFT.sol";
  * @title FF Token 
  */
 contract FF is FFT {
-    constructor(address _launcher, address _callee, address _gasManager) FFT("Fair&Free", "FF", _launcher, _callee, _gasManager) {}
+    constructor(address _launcher, address _gasManager) FFT("Fair&Free", "FF", _launcher, _gasManager) {}
 }
