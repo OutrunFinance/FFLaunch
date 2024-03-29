@@ -5,7 +5,7 @@ import "./BaseScript.s.sol";
 import "../src/example/FF.sol";
 import "../src/example/FFPoolCallee.sol";
 
-contract FFLaunchScript is BaseScript {
+contract ExampleScript is BaseScript {
     function run() public broadcaster {
         address owner = vm.envAddress("OWNER");
         address PETH = vm.envAddress("PETH");
