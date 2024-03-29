@@ -25,8 +25,6 @@ interface IFFT is IERC20, IERC20Errors {
 
     function transferable() external view returns (bool);
 
-    function initialize(address callee_) external;
-
     function enableTransfer() external;
 
     function mint(address _account, uint256 _amount) external;
