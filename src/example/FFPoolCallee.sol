@@ -13,7 +13,7 @@ import "../blast/GasManagerable.sol";
  * @dev example - $FF pool callee
  */
 contract FFPoolCallee is IPoolCallee, Ownable, GasManagerable, Initializable {
-    address public immutable PETH;      // Price token
+    address public immutable OSETH;      // Price token
     address public immutable LAUNCHER;
 
     uint256 public constant AMOUNT_PER_MINT_0 = 6000;
@@ -32,13 +32,13 @@ contract FFPoolCallee is IPoolCallee, Ownable, GasManagerable, Initializable {
 
     constructor(
         address _owner,
-        address _pETH,
+        address _osETH,
         address _launcher,
         address _gasManager,
         uint256 _checkPoint0,
         uint256 _checkPoint1
     ) Ownable(_owner) GasManagerable(_gasManager) {
-        PETH = _pETH;
+        OSETH = _osETH;
         LAUNCHER = _launcher;
         checkPoint0 = _checkPoint0;
         checkPoint1 = _checkPoint1;

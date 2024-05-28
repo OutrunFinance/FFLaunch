@@ -7,12 +7,12 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./interfaces/IEthFFLauncher.sol";
-import "../utils/IRETH.sol";
+import "../utils/IORETH.sol";
 import "../utils/AutoIncrementId.sol";
 import "../utils/OutswapV1Library.sol";
 import "../utils/IOutswapV1Router.sol";
 import "../utils/IOutswapV1Pair.sol";
-import "../utils/IRETHStakeManager.sol";
+import "../utils/IORETHStakeManager.sol";
 import "../callee/IPoolCallee.sol";
 import "../token/interfaces/IFFT.sol";
 import "../../blast/GasManagerable.sol";
@@ -21,9 +21,9 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
     using SafeERC20 for IERC20;
 
     uint256 public constant DAY = 24 * 3600;
-    address public immutable RETH;
-    address public immutable PETH;
-    address public immutable RETHStakeManager;
+    address public immutable ORETH;
+    address public immutable OSETH;
+    address public immutable orETHStakeManager;
     address public immutable outswapV1Router;
     address public immutable outswapV1Factory;
 
@@ -35,18 +35,18 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
 
     constructor(
         address _owner,
-        address _rETH,
-        address _pETH,
+        address _orETH,
+        address _osETH,
         address _gasManager,
         address _outswapV1Router,
         address _outswapV1Factory,
-        address _RETHStakeManager
+        address _orETHStakeManager
     ) Ownable(_owner) GasManagerable(_gasManager) {
-        RETH = _rETH;
-        PETH = _pETH;
+        ORETH = _orETH;
+        OSETH = _osETH;
         outswapV1Router = _outswapV1Router;
         outswapV1Factory = _outswapV1Factory;
-        RETHStakeManager = _RETHStakeManager;
+        orETHStakeManager = _orETHStakeManager;
     }
 
     function tempFund(uint256 poolId) external view override returns (uint256) {
@@ -109,25 +109,25 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
             _tempFund[poolId] -= fund;
             _tempFundPool[poolId][msgSender] = 0;
             
-            IRETH(RETH).deposit{value: fund}();
-            IERC20(RETH).approve(RETHStakeManager, fund);
-            (uint256 amountInPETH, ) = IRETHStakeManager(RETHStakeManager).stake(fund, lockupDays, msgSender, address(this), msgSender);
+            IORETH(ORETH).deposit{value: fund}();
+            IERC20(ORETH).approve(orETHStakeManager, fund);
+            (uint256 amountInOSETH, ) = IORETHStakeManager(orETHStakeManager).stake(fund, lockupDays, msgSender, address(this), msgSender);
 
             // Calling the registered Callee contract to get deployed token and mint token to user
             address callee = pool.callee;
-            uint256 deployTokenAmount = IPoolCallee(callee).getDeployedToken(amountInPETH);
+            uint256 deployTokenAmount = IPoolCallee(callee).getDeployedToken(amountInOSETH);
 
             address token = pool.token;
-            IERC20(PETH).approve(outswapV1Router, amountInPETH);
+            IERC20(OSETH).approve(outswapV1Router, amountInOSETH);
             IERC20(token).approve(outswapV1Router, deployTokenAmount);
             (,, uint256 liquidity) = IOutswapV1Router(outswapV1Router).addLiquidity(
-                PETH, token, amountInPETH, deployTokenAmount, amountInPETH, deployTokenAmount, address(this), block.timestamp + 600
+                OSETH, token, amountInOSETH, deployTokenAmount, amountInOSETH, deployTokenAmount, address(this), block.timestamp + 600
             );
-            IPoolCallee(callee).claim(amountInPETH, msgSender);
+            IPoolCallee(callee).claim(amountInOSETH, msgSender);
             unchecked {
                 pool.totalLP += uint128(liquidity);
-                pool.totalActualFund += uint128(amountInPETH);
-                _poolFunds[poolId][msgSender] += amountInPETH;
+                pool.totalActualFund += uint128(amountInOSETH);
+                _poolFunds[poolId][msgSender] += amountInOSETH;
             }
         } else {
             _tempFund[poolId] -= fund;
@@ -158,7 +158,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         require(block.timestamp >= pool.claimDeadline + pool.lockupDays * DAY, "Locked LP");
 
         uint256 lpAmount = pool.totalLP * fund / pool.totalActualFund;
-        address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, PETH);
+        address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSETH);
         _isPoolLPClaimed[poolId][msgSender] = true;
         IERC20(pair).safeTransfer(msgSender, lpAmount);
 
@@ -174,7 +174,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         LaunchPool storage pool = _launchPools[poolId];
         require(msgSender == pool.callee && block.timestamp > pool.claimDeadline, "Permission denied");
 
-        address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, PETH);
+        address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSETH);
         uint256 makerFee = IOutswapV1Pair(pair).claimMakerFee();
         IERC20(pair).safeTransfer(receiver, makerFee);
 

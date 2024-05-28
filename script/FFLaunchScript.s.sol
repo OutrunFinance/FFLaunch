@@ -8,16 +8,16 @@ contract FFLaunchScript is BaseScript {
     function run() public broadcaster {
         address owner = vm.envAddress("OWNER");
         address gasManager = vm.envAddress("GAS_MANAGER");
-        address RETH = vm.envAddress("RETH");
-        address PETH = vm.envAddress("PETH");
+        address orETH = vm.envAddress("ORETH");
+        address osETH = vm.envAddress("OSETH");
 
         address router = vm.envAddress("OUTSWAP_ROUTER");
         address factory = vm.envAddress("OUTSWAP_FACTORY");
-        address stakeManager = vm.envAddress("RETH_STAKE_MANAGER");
+        address stakeManager = vm.envAddress("ORETH_STAKE_MANAGER");
         EthFFLauncher ethLauncher = new EthFFLauncher(
             owner,
-            RETH,
-            PETH,
+            orETH,
+            osETH,
             gasManager,
             router,
             factory,
