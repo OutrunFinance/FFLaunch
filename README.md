@@ -26,7 +26,7 @@ Here’s the key point: under our supervision, all projects launched on FFLaunch
 
 In this "risk-free" scenario, the participation funds will exceed those of ordinary LaunchPads. The tokens will receive ample liquidity support and market attention, and the project team will earn sufficient fee income, achieving a win-win situation. This is the true primary market, not those fake IDOs. This is the true essence of Web3!!!
 
-_We particularly encourage verified startup teams to conduct community seed rounds on our platform, locking in for longer durations to secure continuous revenue streams for supporting project development.
+**We particularly encourage verified startup teams to conduct community seed rounds on our platform, locking in for longer durations to secure continuous revenue streams for supporting project development.**
 
 # Event Lifecycle
 
