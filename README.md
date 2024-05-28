@@ -16,7 +16,17 @@ For the project team, the funds they raise come from the trading fees collected 
 
 Compared to traditional ICOs or IDOs, the FFLaunch model is fairer and more investor-friendly. Investors can obtain the project's tokens for free, while also preventing the project team from conducting rug pulls or abandoning further development of the product after raising a large amount of funds, as is common in traditional IDOs. To raise further funds, project teams must continuously iterate on products during the LP lock-up period, encouraging users to trade their tokens. This facilitates sustained growth in cash flow. Furthermore, the FFLaunch model fosters community-driven liquidity. Since tokens are essentially obtained for free, this encourages more liquidity to be pooled, thereby increasing the depth of the liquidity pool. This is crucial for a newly launched project.
 
-## Event Lifecycle
+# Risk-Free LaunchPad
+
+We can proudly proclaim that we are the first "risk-free" LaunchPad in history. For participating users, the risk is extremely low, and they can obtain a risk-free return similar to that of government bonds. Why can we say this?
+
+Let's imagine a scenario where users participate in a LaunchPool with a fixed mintFee. Each user will incur the same cost for the tokens they receive since the mintFee does not change. The mintFee paid by users will be combined with a reserved portion of tokens to form an LP, which will be locked for a certain period. After the lock period expires, the LP will be returned to the users, and they will receive back the mintFee they paid along with the reserved portion of tokens.
+
+Here’s the key point: under our supervision, all projects launched on FFLaunch cannot mint or release new tokens during the LP lock period. New tokens can only be released one week after the lock period expires. This means that even if all users simultaneously sell their tokens at the end of the FFLaunch event, in this closed system with no new tokens being added, when the LP lock period expires, they will regain their sold tokens and part of the mintFee. The scenario mentioned above only applies if no one buys tokens during the LP lock period. If new users do purchase tokens, all early participants will be rewarded.
+
+In this "risk-free" scenario, the participation funds will exceed those of ordinary LaunchPads. The tokens will receive ample liquidity support and market attention, and the project team will earn sufficient fee income, achieving a win-win situation. This is the true primary market, not those fake IDOs. This is the true essence of Web3!!!
+
+# Event Lifecycle
 
 There are a total of 3 entities and 6 stages in the lifecycle of the FFLaunch event.
 
@@ -35,13 +45,13 @@ Stages:
 5. Open Trading Stage  
 6. LP Settlement Stage
 
-### Apply Stage
+## Apply Stage
 
 + Third-party team develops Callee and Token contracts. The Callee contract must implement the IPoolCallee interface, while the Token contract should inherit from the FFT contract (with the ability to override certain methods).
 
 + Third-party team applies to list on Outrun FFLauncher, submitting detailed project and team information along with the Callee and Token contracts. Continuous communication with the OutrunDao audit team is required.
 
-### Audit Stage
+## Audit Stage
 
 + The OutrunDao audit team thoroughly reviews the submitted materials from the third-party team and engages in communication with them.
 
@@ -49,22 +59,22 @@ Stages:
 If the audit fails, the OutrunDao audit team provides modification suggestions to the third-party team, which must then reapply.
 If the audit passes, the OutrunDao audit team registers a new LaunchPool with Outrun FFLauncher.
 
-### Deposit Stage
+## Deposit Stage
 
 + During the time between the registered Pool's startTime and endTime, users can call the deposit method of the FFLauncher contract to deposit funds into the temporary pool of that Pool. It's important to note that there is some overlap in time between the Deposit and Claim stages.
 
-### Claim Stage
+## Claim Stage
 
 + Before the claimDeadline of the registered Pool, users can call the claimTokenOrFund method of the FFLauncher contract to stake their deposits in the temporary fund pool to Outstake in order to obtain liquidity staking tokens and YieldTokens. They also invoke the Callee contract registered by the third-party team to add liquidity to Outswap. The LP will be locked in the FFLauncher contract. Subsequently, users will receive tokens from the third-party team.
 
 + After the claimDeadline of the registered Pool, it is the open trading stage. Users cannot claim tokens from the third-party team anymore. Instead, they will execute a refund operation to withdraw their funds from the temporary fund pool.
 
-### Open Trading Stage
+## Open Trading Stage
 
 + After the Claim Stage, the third-party team opens the trading switch, allowing tokens to be transferred freely and traded.
 
 + During this stage, the market-making profits generated by the LP locked in the FFLauncher contract will be obtained by the third-party team, constituting the funds raised by the third-party team.
 
-### LP Settlement Stage
+## LP Settlement Stage
 
 + Once the LP lockup period expires, users can call the claimPoolLP method of the FFLauncher contract to withdraw the LP tokens locked during the Claim Stage. The third-party team will no longer receive LP market-making profits.
