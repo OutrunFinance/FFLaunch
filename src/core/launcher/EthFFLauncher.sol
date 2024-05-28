@@ -47,6 +47,9 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         outswapV1Router = _outswapV1Router;
         outswapV1Factory = _outswapV1Factory;
         orETHStakeManager = _orETHStakeManager;
+
+        IERC20(ORETH).approve(orETHStakeManager, type(uint256).max);
+        IERC20(OSETH).approve(outswapV1Router, type(uint256).max);
     }
 
     function tempFund(uint256 poolId) external view override returns (uint256) {
@@ -87,6 +90,8 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         require(msgValue <= maxFee, "Invalid vaule");
         require(currentTime > startTime && currentTime < endTime, "Invalid time");
 
+        IORETH(ORETH).deposit{value: msgValue}();
+
         unchecked {
             _tempFund[poolId] += msgValue;
             _tempFundPool[poolId][msgSender] += msgValue;
@@ -109,8 +114,6 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
             _tempFund[poolId] -= fund;
             _tempFundPool[poolId][msgSender] = 0;
             
-            IORETH(ORETH).deposit{value: fund}();
-            IERC20(ORETH).approve(orETHStakeManager, fund);
             (uint256 amountInOSETH, ) = IORETHStakeManager(orETHStakeManager).stake(fund, lockupDays, msgSender, address(this), msgSender);
 
             // Calling the registered Callee contract to get deployed token and mint token to user
@@ -118,7 +121,6 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
             uint256 deployTokenAmount = IPoolCallee(callee).getDeployedToken(amountInOSETH);
 
             address token = pool.token;
-            IERC20(OSETH).approve(outswapV1Router, amountInOSETH);
             IERC20(token).approve(outswapV1Router, deployTokenAmount);
             (,, uint256 liquidity) = IOutswapV1Router(outswapV1Router).addLiquidity(
                 OSETH, token, amountInOSETH, deployTokenAmount, amountInOSETH, deployTokenAmount, address(this), block.timestamp + 600
@@ -132,6 +134,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         } else {
             _tempFund[poolId] -= fund;
             _tempFundPool[poolId][msgSender] = 0;
+            IORETH(ORETH).withdraw(fund);
             Address.sendValue(payable(msgSender), fund);
         }
     }
