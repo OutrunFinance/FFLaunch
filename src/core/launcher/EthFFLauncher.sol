@@ -48,8 +48,8 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         outswapV1Factory = _outswapV1Factory;
         orETHStakeManager = _orETHStakeManager;
 
-        IERC20(ORETH).approve(orETHStakeManager, type(uint256).max);
-        IERC20(OSETH).approve(outswapV1Router, type(uint256).max);
+        IERC20(ORETH).approve(_orETHStakeManager, type(uint256).max);
+        IERC20(OSETH).approve(_outswapV1Router, type(uint256).max);
     }
 
     function tempFund(uint256 poolId) external view override returns (uint256) {
