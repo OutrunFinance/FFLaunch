@@ -90,8 +90,6 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         require(msgValue <= maxFee, "Invalid vaule");
         require(currentTime > startTime && currentTime < endTime, "Invalid time");
 
-        IORETH(ORETH).deposit{value: msgValue}();
-
         unchecked {
             _tempFund[poolId] += msgValue;
             _tempFundPool[poolId][msgSender] += msgValue;
@@ -114,6 +112,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
             _tempFund[poolId] -= fund;
             _tempFundPool[poolId][msgSender] = 0;
             
+            IORETH(ORETH).deposit{value: fund}();
             (uint256 amountInOSETH, ) = IORETHStakeManager(orETHStakeManager).stake(fund, lockupDays, msgSender, address(this), msgSender);
 
             // Calling the registered Callee contract to get deployed token and mint token to user
@@ -134,7 +133,6 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         } else {
             _tempFund[poolId] -= fund;
             _tempFundPool[poolId][msgSender] = 0;
-            IORETH(ORETH).withdraw(fund);
             Address.sendValue(payable(msgSender), fund);
         }
     }
