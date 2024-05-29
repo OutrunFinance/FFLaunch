@@ -85,9 +85,9 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         LaunchPool storage pool = _launchPools[poolId];
         uint64 startTime = pool.startTime;
         uint64 endTime = pool.endTime;
-        uint128 maxFee = pool.maxFee;
+        uint128 maxDeposit = pool.maxDeposit;
         uint256 currentTime = block.timestamp;
-        require(msgValue <= maxFee, "Invalid vaule");
+        require(msgValue <= maxDeposit, "Invalid vaule");
         require(currentTime > startTime && currentTime < endTime, "Invalid time");
 
         unchecked {
@@ -188,7 +188,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
      * @param callee Callee address
      * @param startTime StartTime of launchpool
      * @param endTime EndTime of launchpool
-     * @param maxFee Max fee per deposit
+     * @param maxDeposit Max fee per deposit
      * @param claimDeadline Deadline of claim token
      * @param lockupDays LockupDay of LP
      * @notice The callee code should be kept as concise as possible and undergo auditing to prevent malicious behavior.
@@ -198,7 +198,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         address callee,
         uint64 startTime,
         uint64 endTime,
-        uint128 maxFee,
+        uint128 maxDeposit,
         uint128 claimDeadline,
         uint128 lockupDays
     ) external override onlyOwner returns (uint256 poolId) {
@@ -210,7 +210,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         LaunchPool storage currentPool = _launchPools[currentPoolId];
         require(currentTime > currentPool.claimDeadline, "Last pool ongoing");
 
-        LaunchPool memory pool = LaunchPool(token, callee, maxFee, lockupDays, 0, 0, claimDeadline, startTime, endTime);
+        LaunchPool memory pool = LaunchPool(token, callee, claimDeadline, lockupDays, 0, 0, maxDeposit, startTime, endTime);
         poolId = nextId();
         _launchPools[poolId] = pool;
 

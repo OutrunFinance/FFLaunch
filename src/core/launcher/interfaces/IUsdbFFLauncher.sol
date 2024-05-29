@@ -5,11 +5,11 @@ interface IUsdbFFLauncher {
     struct LaunchPool {
         address token;
         address callee;
-        uint128 maxFee;
+        uint128 claimDeadline;
         uint128 lockupDays;
         uint128 totalActualFund;
         uint128 totalLP;
-        uint128 claimDeadline;
+        uint128 maxDeposit;
         uint64 startTime;
         uint64 endTime;
     }
