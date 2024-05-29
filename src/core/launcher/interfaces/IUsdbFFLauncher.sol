@@ -5,13 +5,13 @@ interface IUsdbFFLauncher {
     struct LaunchPool {
         address token;
         address callee;
-        uint64 startTime;
-        uint64 endTime;
         uint128 maxFee;
-        uint128 claimDeadline;
         uint128 lockupDays;
         uint128 totalActualFund;
         uint128 totalLP;
+        uint128 claimDeadline;
+        uint64 startTime;
+        uint64 endTime;
     }
 
     function tempFund(uint256 poolId) external view returns (uint256);

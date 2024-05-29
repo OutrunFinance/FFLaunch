@@ -210,7 +210,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         LaunchPool storage currentPool = _launchPools[currentPoolId];
         require(currentTime > currentPool.claimDeadline, "Last pool ongoing");
 
-        LaunchPool memory pool = LaunchPool(token, callee, startTime, endTime, maxFee, claimDeadline, lockupDays, 0, 0);
+        LaunchPool memory pool = LaunchPool(token, callee, maxFee, lockupDays, 0, 0, claimDeadline, startTime, endTime);
         poolId = nextId();
         _launchPools[poolId] = pool;
 
