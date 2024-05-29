@@ -169,7 +169,7 @@ contract UsdbFFLauncher is IUsdbFFLauncher, Ownable, GasManagerable, AutoIncreme
     }
 
     /**
-     * @dev Claim your LP by pooId when LP unlocked
+     * @dev Claim pool maker fee
      * @param receiver Address to receive maker fee
      */
     function claimPoolMakerFee(uint256 poolId, address receiver) external override {
