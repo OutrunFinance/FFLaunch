@@ -87,10 +87,6 @@ abstract contract FFT is IFFT, GasManagerable {
         _mint(_account, _amount);
     }
 
-    function burn(address _account, uint256 _amount) external override onlyCallee {
-        _burn(_account, _amount);
-    }
-
     function transfer(address to, uint256 value) public override returns (bool) {
         address owner = _msgSender();
         _transfer(owner, to, value);
