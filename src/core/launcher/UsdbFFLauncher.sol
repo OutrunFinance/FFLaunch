@@ -82,7 +82,6 @@ contract UsdbFFLauncher is IUsdbFFLauncher, Ownable, GasManagerable, AutoIncreme
         address msgSender = msg.sender;
         require(msgSender == tx.origin, "Only EOA account");
 
-        uint256 msgValue = msg.value;
         uint256 poolId = id;
         LaunchPool storage pool = _launchPools[poolId];
         uint64 startTime = pool.startTime;
@@ -218,9 +217,5 @@ contract UsdbFFLauncher is IUsdbFFLauncher, Ownable, GasManagerable, AutoIncreme
         _launchPools[poolId] = pool;
 
         emit RegisterPool(poolId, pool);
-    }
-
-    receive() external payable {
-        deposit();
     }
 }

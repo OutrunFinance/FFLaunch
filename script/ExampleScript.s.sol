@@ -8,13 +8,11 @@ import "../src/example/FFPoolCallee.sol";
 contract ExampleScript is BaseScript {
     function run() public broadcaster {
         address owner = vm.envAddress("OWNER");
-        address PETH = vm.envAddress("PETH");
         address launcher = vm.envAddress("LAUNCHER");
         address gasManager = vm.envAddress("GAS_MANAGER");
 
         FFPoolCallee callee = new FFPoolCallee(
             owner,
-            PETH,
             launcher,
             gasManager,
             block.timestamp + 3 days,

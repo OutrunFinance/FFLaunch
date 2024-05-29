@@ -7,7 +7,7 @@ pragma solidity ^0.8.24;
 interface IORUSDStakeManager {
     function stake(
         uint256 amountInORUSD, 
-        uint16 lockupDays, 
+        uint256 lockupDays, 
         address positionOwner, 
         address osUSDTo, 
         address ruyTo

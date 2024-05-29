@@ -31,13 +31,11 @@ contract FFPoolCallee is IPoolCallee, Ownable, GasManagerable, Initializable {
 
     constructor(
         address _owner,
-        address _osETH,
         address _launcher,
         address _gasManager,
         uint256 _checkPoint0,
         uint256 _checkPoint1
     ) Ownable(_owner) GasManagerable(_gasManager) {
-        OSETH = _osETH;
         LAUNCHER = _launcher;
         checkPoint0 = _checkPoint0;
         checkPoint1 = _checkPoint1;
