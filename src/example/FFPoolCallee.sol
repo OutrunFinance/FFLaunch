@@ -13,7 +13,6 @@ import "../blast/GasManagerable.sol";
  * @dev example - $FF pool callee
  */
 contract FFPoolCallee is IPoolCallee, Ownable, GasManagerable, Initializable {
-    address public immutable OSETH;      // Price token
     address public immutable LAUNCHER;
 
     uint256 public constant AMOUNT_PER_MINT_0 = 6000;
