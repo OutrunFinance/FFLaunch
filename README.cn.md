@@ -25,6 +25,11 @@ FFLaunch 将 OutrunDao 的另外两个产品 "Outstake" 和 "Outswap" 组合起�
 在这种“无风险”的情况下，参与的资金将会比普通的 LaunchPad 更多，代币将会获得充足的流动性支持和市场关注度，项目团队也会获得足够的手续费收入，实现双赢，这才是真正的一级市场，而不是那些 Fake IDO，这才是 WEB3!!!
 
 **我们更鼓励实名的初创团队在我们平台进行社区种子轮融资，锁定更长的时间，获取持续的收入流以支持项目的开发。**
+**我们也鼓励具有强大社区与运营团队的meme coin在我们平台上公平发射，获取持续的收入流以支持社区的运营。**
+
+## FFLaunch 对 Outstake 和 Outswap 的影响
+
+由于参与 FFLanch 的 ETH 与 USDB 会被质押在 Outstake 的协议中，然后再预留的 token 组成 LP 并锁定与前者质押时间相同的时间。所以参与 FFLanch 用户会同时获得 Blast 原生收益并提高 Outstake 的 TVL，而质押产出的 osETH 和 osUSD 则被锁定在 Outswap 之中。用户购买 token 需要使用 osETH 或 osUSD，这无疑会提高市场对 osETH 和 osUSD 的需求，用户会选择质押更多的 ETH 与 USDB，或者直接从 Outswap 上购买。因此 Outswap 的 TVL 与交易量也会得到提升。在 LP 锁定的很长时间里，用户都使用 osETH 和 osUSD 进行交易，这对于培养用户习惯至关重要，未来越来越多的交易对，越来越多的人会使用 osETH 和 osUSD，让 Outrun 生态更加繁荣。这是很多 LST 都无法做到的事，也是对当前 LST 使用场景受限的重大破局。
 
 ## 事件生命周期
 
