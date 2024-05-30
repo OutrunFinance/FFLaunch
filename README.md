@@ -1,12 +1,10 @@
 **Read this in Chinese: [中文](README.cn.md)**
 
-# FFLaunch
+## FFLaunch
 
 The first Fair and Free Launch standard, inspired by the inscription.
 
-Do you remember the recent inscription Summer?
-
-Imagine combining inscription's FairLaunch feature with LaunchPad.
+Do you remember the recent inscription Summer? Imagine combining inscription's FairLaunch feature with LaunchPad.
 
 FFLaunch combines OutrunDao's other two products, "Outstake" and "Outswap," leveraging their strengths to create the fairest token issuance method in history.
 
@@ -14,7 +12,10 @@ Issuing ERC20 tokens like inscription, users can mint tokens by staking and lock
 
 For the project team, the funds they raise come from the trading fees collected by the trading pairs during the LP lockup period.With the core fundamental requirements mentioned above, we also provide customizable callee interfaces for project teams to support the flexibility of FFLaunch. This allows project teams to build their own unique launch logic on top of the Fair And Free foundation.
 
-Compared to traditional ICOs or IDOs, the FFLaunch model is fairer and more investor-friendly. Investors can obtain the project's tokens for free, while also preventing the project team from conducting rug pulls or abandoning further development of the product after raising a large amount of funds, as is common in traditional IDOs. To raise further funds, project teams must continuously iterate on products during the LP lock-up period, encouraging users to trade their tokens. This facilitates sustained growth in cash flow. Furthermore, the FFLaunch model fosters community-driven liquidity. Since tokens are essentially obtained for free, this encourages more liquidity to be pooled, thereby increasing the depth of the liquidity pool. This is crucial for a newly launched project.
+### Not everything has a fixed price.
+Compared to traditional ICOs or IDOs, the FFLaunch model is fairer and more investor-friendly. Investors can obtain the project's tokens for free, while also preventing the project team from conducting rug pulls or abandoning further development of the product after raising a large amount of funds, as is common in traditional IDOs. To raise further funds, project teams must continuously iterate on products during the LP lock-up period, encouraging users to trade their tokens. This facilitates sustained growth in cash flow. 
+
+Furthermore, the FFLaunch model fosters community-driven liquidity. Since tokens are essentially obtained for free, this encourages more liquidity to be pooled, thereby increasing the depth of the liquidity pool. This is crucial for a newly launched project.
 
 ## Risk-Free LaunchPad
 
@@ -22,23 +23,47 @@ We can proudly proclaim that we are the first "risk-free" LaunchPad in history. 
 
 Let's imagine a scenario where users participate in a LaunchPool with a fixed mintFee. Each user will incur the same cost for the tokens they receive since the mintFee does not change. The mintFee paid by users will be combined with a reserved portion of tokens to form an LP, which will be locked for a certain period. After the lock period expires, the LP will be returned to the users, and they will receive back the mintFee they paid along with the reserved portion of tokens.
 
+### New tokens cannot be released during the liquidity lock period
+
 Here’s the key point: under our supervision, all projects launched on FFLaunch cannot mint or release new tokens during the LP lock period. New tokens can only be released one week after the lock period expires. This means that even if all users simultaneously sell their tokens at the end of the FFLaunch event, in this closed system with no new tokens being added, when the LP lock period expires, they will regain their sold tokens and part of the mintFee. The scenario mentioned above only applies if no one buys tokens during the LP lock period. If new users do purchase tokens, all early participants will be rewarded.
+
+### A win-win situation for Web3 users and project teams
 
 In this "risk-free" scenario, the participation funds will exceed those of ordinary LaunchPads. The tokens will receive ample liquidity support and market attention, and the project team will earn sufficient fee income, achieving a win-win situation. This is the true primary market, not those fake IDOs. This is the true essence of Web3!!!
 
-**We particularly encourage verified startup teams to conduct community seed rounds on our platform, locking in for longer durations to secure continuous revenue streams for supporting project development.**
+**1) We particularly encourage verified startup teams to conduct community seed rounds on our platform, locking in for longer durations to secure continuous revenue streams for supporting project development.**
+**2) We also encourage meme coins with strong communities and operational teams to launch fairly on our platform, gaining continuous revenue streams to support community operations.**
 
 ## Impact of FFLaunch on Outrun Ecosystem
 
-### Outstake
+### 1. Increasing Outstake's TVL:
 
-The ETH and USDB participating in FFLaunch will be staked in the Outstake protocol. These assets are then combined with reserved tokens to form LPs, which are locked for the same duration as the Outstake. As a result, users participating in FFLaunch will simultaneously receive native Blast rewards and increase Outstake's TVL.
+Users participating in FFLaunch will stake their ETH and USDB in the Outstake protocol. These staked assets will form liquidity pools (LPs) along with reserved tokens and will be locked for the same duration as the Outstake. 
 
-### Outswap
-The osETH and osUSD minted by Outstake will be locked in Outswap. Users need to use osETH or osUSD to purchase tokens, which will undoubtedly increase the demand for osETH and osUSD. Users will choose to stake more ETH and USDB, or directly buy from Outswap. Consequently, both the TVL and trading volume of Outswap will increase.
++ Users will receive corresponding Blast native yield after staking ETH and USDB.
++ The total locked value (TVL) of Outstake will significantly increase due to the increase in staked assets.
 
-### Long-term Benefits
-During the long LP lock period, users will use osETH and osUSD for trading. This is crucial for cultivating user habits. In the future, more trading pairs and more users will utilize osETH and osUSD, making the Outrun ecosystem more prosperous. This is something that many other Liquid Staking Tokens (LSTs) cannot achieve and represents a significant breakthrough in overcoming the current limitations of LST usage scenarios.
+### 2. Boosting Demand for osETH and osUSD
+
+When participating in FFLaunch, the Outstake protocol will mint osETH and osUSD, which will be locked in Outswap. Users will need to use osETH or osUSD when purchasing tokens.
+
++ This will directly increase the demand for osETH and osUSD in the market.
++ Users may stake more ETH and USDB to acquire osETH and osUSD, or directly purchase these tokens from Outswap.
++ Consequently, the TVL and trading volume of Outswap will increase.
+
+### 3. Cultivating User Usage Habits
+
+During the prolonged period of locked liquidity, users will gradually become accustomed to trading with osETH and osUSD.
+
++ Long-term usage habits will help users accept and become accustomed to using these tokens, osETH and osUSD will serve as the base tokens for trading pairs.
++ With the addition of more trading pairs, an increasing number of users will use osETH and osUSD, further driving the prosperity of the Outrun ecosystem.
+
+### 4. Breaking the Limitations of LST Usage Scenarios
+
+Many Liquidity Staking Tokens (LSTs) face limitations in their usage scenarios, but FFLaunch provides an innovative way to overcome these limitations
+
++ By creating new usage scenarios on Outstake and Outswap, FFLaunch enhances the practicality of LSTs.
++ This strategy will attract more users, thereby increasing the activity and value of the entire ecosystem.
 
 ## Event Lifecycle
 
