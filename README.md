@@ -32,6 +32,7 @@ Here’s the key point: under our supervision, all projects launched on FFLaunch
 In this "risk-free" scenario, the participation funds will exceed those of ordinary LaunchPads. The tokens will receive ample liquidity support and market attention, and the project team will earn sufficient fee income, achieving a win-win situation. This is the true primary market, not those fake IDOs. This is the true essence of Web3!!!
 
 **1) We particularly encourage verified startup teams to conduct community seed rounds on our platform, locking in for longer durations to secure continuous revenue streams for supporting project development.**
+
 **2) We also encourage meme coins with strong communities and operational teams to launch fairly on our platform, gaining continuous revenue streams to support community operations.**
 
 ## Impact of FFLaunch on Outrun Ecosystem
