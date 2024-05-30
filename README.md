@@ -37,7 +37,7 @@ In this "risk-free" scenario, the participation funds will exceed those of ordin
 
 ## Impact of FFLaunch on Outrun Ecosystem
 
-### 1. Increasing Outstake's TVL:
+### 1. Increasing Outstake's TVL
 
 Users participating in FFLaunch will stake their ETH and USDB in the Outstake protocol. These staked assets will form liquidity pools (LPs) along with reserved tokens and will be locked for the same duration as the Outstake. 
 
