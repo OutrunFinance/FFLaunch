@@ -2,9 +2,7 @@
 
 首个Fair&Free Launch标准，灵感来自于铭文。
 
-还记得前段时间的铭文 Summer 吗？
-
-试想一下将铭文的 FairLaunch 特性与 LaunchPad 结合会是什么样的呢？
+还记得前段时间的铭文 Summer 吗？试想一下将铭文的 FairLaunch 特性与 LaunchPad 结合会是什么样的呢？
 
 FFLaunch 将 OutrunDao 的另外两个产品 "Outstake" 和 "Outswap" 组合起来，利用它们的优势创造了史上最公平公正的代币发行方式。
 
@@ -12,7 +10,10 @@ FFLaunch 将 OutrunDao 的另外两个产品 "Outstake" 和 "Outswap" 组合起�
 
 对于项目团队来说，他们所募集的资金是就是 LP 锁定期间交易对产生的交易手续费。在基于上述核心基本要求的情况下，我们还为项目方提供了可定制的 callee 接口以支持 FFLaunch 的灵活性, 项目方可以在 Fair And Free 的基础上构建自己独特的 Launch 逻辑。
 
-相比于传统的 ICO 或 IDO, FFLaunch 的模式更加公平，对投资者更加友好。投资者可以免费获得项目方的代币，同时还可以防止项目团队像传统 IDO 一样募集大量资金后就 RUG 或者不在继续用心开发产品。项目方想募集更多资金就需要在 LP 锁定期间不断迭代产品，让用户愿意交易自己的代币，从而获得持续增长的现金流。并且 FFLaunch 模式是社区共建流动性，由于代币相当于免费获得，在这种情况下会聚集更多的流动性，从而提高流动性池的深度，这对于一个刚启动的新项目来说非常重要。
+### 免费的不是最贵的
+相比于传统的 ICO 或 IDO, FFLaunch 的模式更加公平，对投资者更加友好。投资者可以免费获得项目方的代币，同时还可以防止项目团队像传统 IDO 一样募集大量资金后就 RUG 或者不在继续用心开发产品。项目方想募集更多资金就需要在 LP 锁定期间不断迭代产品，让用户愿意交易自己的代币，从而获得持续增长的现金流。
+
+并且 FFLaunch 模式是社区共建流动性，由于代币相当于免费获得，在这种情况下会聚集更多的流动性，从而提高流动性池的深度，这对于一个刚启动的新项目来说非常重要。
 
 ## 无风险 LaunchPad
 
@@ -20,20 +21,51 @@ FFLaunch 将 OutrunDao 的另外两个产品 "Outstake" 和 "Outswap" 组合起�
 
 我们想象这样一个场景，用户在参与一个 mintFee 不会变化的 LaunchPool 时，每个用户会获得的代币的成本是一样的（因为 mintFee 没有变化），同时他们所支出的 mintFee 会与预留的一部分代币组成 LP 并锁定一段时间，在锁定到期后 LP 将会归还给用户，用户会再次获得他们支出的 mintFee 与 预留的那部分代币。
 
+### 流动性锁定期间无法释放新代币
+
 接下来是重点，在我们的审核下，在 FFLaunch 上启动的的所有项目，在 LP 锁定期间不能铸造或者释放新的代币。在锁定到期一周后才可以释放新的代币。也就是说，即使所有的用户在 FFLaunch 事件结束时同时出售了手里的所有代币，在这个没有新增代币的封闭系统中，当 LP 锁定时间到期时，他们会重新获得他们出售的代币和部分 mintFee，这还是在 LP 锁定期间没有任何人购买代币的情况下，当有新的用户购买代币时，所有的早期参与者都将被奖励。
 
+### Web3用户与项目团队的双赢
 在这种“无风险”的情况下，参与的资金将会比普通的 LaunchPad 更多，代币将会获得充足的流动性支持和市场关注度，项目团队也会获得足够的手续费收入，实现双赢，这才是真正的一级市场，而不是那些 Fake IDO，这才是 WEB3!!!
 
-**我们更鼓励实名的初创团队在我们平台进行社区种子轮融资，锁定更长的时间，获取持续的收入流以支持项目的开发。**
-**我们也鼓励具有强大社区与运营团队的meme coin在我们平台上公平发射，获取持续的收入流以支持社区的运营。**
 
-## FFLaunch 对 Outstake 和 Outswap 的影响
+**1）我们更鼓励实名的初创团队在我们平台进行社区种子轮融资，锁定更长的时间，获取持续的收入流以支持项目的开发**
 
-由于参与 FFLanch 的 ETH 与 USDB 会被质押在 Outstake 协议中，然后再与预留的 token 组成 LP 并锁定与前者质押时间相同的时间。所以参与 FFLanch 的用户会同时获得 Blast 原生收益并提高 Outstake 的 TVL.
+**2）我们也鼓励具有强大社区与运营团队的 meme coin 在我们平台上公平发射，获取持续的收入流以支持社区的运营**
 
-而 Outstake 铸造的 osETH 和 osUSD 则被锁定在 Outswap 之中。用户购买 token 需要使用 osETH 或 osUSD，这无疑会提高市场对 osETH 和 osUSD 的需求，用户会选择质押更多的 ETH 与 USDB，或者直接从 Outswap 上购买。因此 Outswap 的 TVL 与交易量也会得到提升。
+## FFLaunch 对 Outrun 生态系统的影响
 
-在 LP 锁定的很长时间里，用户都使用 osETH 和 osUSD 进行交易，这对于培养用户习惯至关重要，未来越来越多的交易对，越来越多的人会使用 osETH 和 osUSD，让 Outrun 生态更加繁荣。这是很多 LST 都无法做到的事，也是对当前 LST 使用场景受限的重大破局。
+### 1. 增加 Outstake 的 TVL
+
+参与 FFLaunch 的用户将其 ETH 和 USDB 质押在 Outstake 协议中。这些质押资产会与预留的代币组成流动性池（LP），并锁定与质押相同的时间。因此：
+
++ 用户在质押 ETH 和 USDB 后，将获得相应的 Blast 原生收益。
++ 由于质押的资产增加，Outstake 的总锁定价值（TVL）也会显著提高。
+
+### 2. 提高 osETH 和 osUSD 的需求
+
+Outstake 协议会铸造 osETH 和 osUSD，这些代币会被锁定在 Outswap 中。用户在购买代币时需要使用 osETH 或 osUSD：
+
++ 这会直接增加市场对 osETH 和 osUSD 的需求。
++ 用户为获取 osETH 和 osUSD，可以选择质押更多的 ETH 和 USDB，或者直接从 Outswap 上购买这些代币。
++ 因此，Outswap 的 TVL 和交易量都会相应增加。
+
+### 3. 培养用户使用习惯
+
+在 LP 被长时间锁定的过程中，用户会逐渐习惯使用 osETH 和 osUSD 进行交易：
+
++ 长时间的使用习惯有助于用户接受并习惯使用这些代币。
++ 随着交易对的增加，越来越多的人将使用 osETH 和 osUSD，进一步推动 Outrun 生态系统的繁荣。
+
+### 4. 打破 LST 的使用场景限制
+
+许多流动性质押代币（LST）在使用场景上存在限制，而 FFLaunch 提供了一种创新的方式来打破这些限制：
+
++ 通过在 Outstake 和 Outswap 上创建新的使用场景，FFLaunch 可以增强 LST 的实用性。
++ 这种策略将吸引更多用户参与，从而增加整个生态系统的活跃度和价值。
+
+### 总结
+FFLaunch 通过质押 ETH 和 USDB 来提高 Outstake 的 TVL，增强 osETH 和 osUSD 的市场需求，并通过长期锁定 LP 来培养用户的交易习惯。这一系列措施将促进 Outrun 生态系统的繁荣，并打破当前 LST 使用场景的限制，为用户提供更多元化和有吸引力的选择。
 
 ## 事件生命周期
 
@@ -54,12 +86,12 @@ FFLaunch 将 OutrunDao 的另外两个产品 "Outstake" 和 "Outswap" 组合起�
 5. 开放交易阶段  
 6. LP 解锁阶段
 
-## 申请阶段
+### 申请阶段
 
 + 第三方团队编写 Callee 与 Token 合约，Callee 合约需要实现 IPoolCallee 接口，Token 合约需要继承 FFT 合约（可重写部分方法）。
 + 第三方团队向申请上线 Outrun FFLauncher，需要提交项目与团队详细资料以及 Callee 与 Token 合约，并持续与 OutrunDao 审核团队交流。
 
-## 审核阶段
+### 审核阶段
 
 + OutrunDao 审核团队将详细审核第三方团队提交的相关资料并与第三方团队交流。
 + OutrunDao 审核团队将审计第三方团队提交的 Callee 与 Token 合约，检查是否为恶意合约或者存在安全漏洞。
@@ -67,20 +99,20 @@ FFLaunch 将 OutrunDao 的另外两个产品 "Outstake" 和 "Outswap" 组合起�
 + 若审核未通过，OutrunDao 审核团队将会对第三方团队提出修改建议，第三方团队需要重新申请。
 + 若审核通过，OutrunDao 审核团队将会向 Outrun FFLauncher 注册新的LaunchPool.
 
-## Deposit 阶段
+### Deposit 阶段
 
 + 当区块时间在已注册的 Pool 的 startTime 与 endTime 之间时，用户可以调用 FFLauncher 合约的 deposit 方法，向该 Pool 的临时资金池存款。需要注意的是 Deposit 阶段和 Claim 阶段有部分时间是重合的。
 
-## Claim 阶段
+### Claim 阶段
 
 + 当区块时间在已注册的 Pool 的 claimDeadline 之前时，用户可以调用 FFLauncher 合约的 claimTokenOrFund 方法，将自己在临时资金池中的存款质押到 Outstake 中以获取流动性质押代币与 YieldToken, 并调用第三方团队注册的 Callee 合约向 Outswap 添加流动性，LP将会锁定在 FFLauncher 合约中。然后用户会获得第三方团队的 Token.
 + 当区块时间在已注册的 Pool 的 claimDeadline 之后时，此时已经是开放交易阶段， 用户无法再 Claim 第三方团队的 Token，而是会执行 Refund 操作，将自己在临时资金池中的资金取出来。
 
-## 开放交易阶段
+### 开放交易阶段
 
 + Claim 阶段结束后，第三方团队打开交易开关，此时 Token 可转移，Token 可以自由交易。
 + 在这个阶段期间，锁定在 FFLauncher 合约中的 LP 所产生的做市收益会由第三方团队获得，即第三方团队募集到的资金。
 
-## LP 结算阶段
+### LP 结算阶段
 
 + 当 LP 锁定时间到期后，用户可以调用 FFLauncher 合约的 claimPoolLP 方法，将自己在 Claim 阶段锁定的 LP 提取出来。第三方团队不会再获得 LP 所产生的做市收益。
