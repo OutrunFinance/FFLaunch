@@ -37,14 +37,14 @@ FFLaunch 将 OutrunDao 的另外两个产品 "Outstake" 和 "Outswap" 组合起�
 
 ### 1. 增加 Outstake 的 TVL
 
-参与 FFLaunch 的用户将其 ETH 和 USDB 质押在 Outstake 协议中。这些质押资产会与预留的代币组成流动性池（LP），并锁定与质押相同的时间。因此：
+参与 FFLaunch 的用户将其 ETH 和 USDB 质押在 Outstake 协议中。这些质押资产会与预留的代币组成流动性池（LP），并锁定与质押相同的时间。
 
 + 用户在质押 ETH 和 USDB 后，将获得相应的 Blast 原生收益。
 + 由于质押的资产增加，Outstake 的总锁定价值（TVL）也会显著提高。
 
 ### 2. 提高 osETH 和 osUSD 的需求
 
-Outstake 协议会铸造 osETH 和 osUSD，这些代币会被锁定在 Outswap 中。用户在购买代币时需要使用 osETH 或 osUSD：
+参与 FFLaunch 时，Outstake 协议会铸造 osETH 和 osUSD，这些代币会被锁定在 Outswap 中。用户在购买代币时需要使用 osETH 或 osUSD。
 
 + 这会直接增加市场对 osETH 和 osUSD 的需求。
 + 用户为获取 osETH 和 osUSD，可以选择质押更多的 ETH 和 USDB，或者直接从 Outswap 上购买这些代币。
@@ -52,14 +52,14 @@ Outstake 协议会铸造 osETH 和 osUSD，这些代币会被锁定在 Outswap �
 
 ### 3. 培养用户使用习惯
 
-在 LP 被长时间锁定的过程中，用户会逐渐习惯使用 osETH 和 osUSD 进行交易：
+在 LP 被长时间锁定的过程中，用户会逐渐习惯使用 osETH 和 osUSD 进行交易。
 
-+ 长时间的使用习惯有助于用户接受并习惯使用这些代币。
++ 长时间的使用习惯有助于用户接受并习惯使用这些代币，osETH 和 osUSD 将作为交易对的基础代币。
 + 随着交易对的增加，越来越多的人将使用 osETH 和 osUSD，进一步推动 Outrun 生态系统的繁荣。
 
 ### 4. 打破 LST 的使用场景限制
 
-许多流动性质押代币（LST）在使用场景上存在限制，而 FFLaunch 提供了一种创新的方式来打破这些限制：
+许多流动性质押代币（LST）在使用场景上存在限制，而 FFLaunch 提供了一种创新的方式来打破这些限制。
 
 + 通过在 Outstake 和 Outswap 上创建新的使用场景，FFLaunch 可以增强 LST 的实用性。
 + 这种策略将吸引更多用户参与，从而增加整个生态系统的活跃度和价值。
