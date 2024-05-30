@@ -2,6 +2,8 @@
 
 ## FFLaunch
 
+### A truly community-driven token financing paradigm
+
 The first Fair and Free Launch standard, inspired by the inscription.
 
 Do you remember the recent inscription Summer? Imagine combining inscription's FairLaunch feature with LaunchPad.
@@ -65,6 +67,16 @@ Many Liquidity Staking Tokens (LSTs) face limitations in their usage scenarios, 
 
 + By creating new usage scenarios on Outstake and Outswap, FFLaunch enhances the practicality of LSTs.
 + This strategy will attract more users, thereby increasing the activity and value of the entire ecosystem.
+
+## Moving like meme
+
+Meme coins in Web3 represent an intriguing asset class. People often passionately support meme coins, even if they lack practical value. The rise of meme coins reflects retail investors' preference for more transparent, community-driven investment methods. This approach not only offers the potential for high returns but also allows investors to directly participate in market activities and enjoy the thrill of investing. Traditional VC coins, due to their complexity and potential for rug pulls, have led retail investors to explore other, more attractive investment options.
+
+As a result, some Web3 developers are starting to feel discouraged, thinking that building a meme coin might be more rewarding than their efforts to create something substantial. This can indeed be disheartening for developers who are genuinely contributing to Web3. However, some clever developers are beginning to contemplate how to integrate the characteristics of meme coins into their projects or empower conventional Web3 projects with meme coin attributes. However, the most we typically see is hosting a meme drawing competition, which, frankly, is a rather ludicrous imitation. Now, I'm here to tell you that it's time for FFLaunch to make its entrance.
+
+Throughout the entire lifecycle of the FFLaunch event, project teams are prohibited from minting or unlocking new tokens, ensuring that all tokens remain in the hands of retail investors. This makes it possible for project tokens to become meme coins during the event's lifecycle, and FFLaunch even creates a more favorable environment for genuine meme coins. During the event's lifecycle, users can freely trade project tokens as meme coins. Regardless of the eventual outcome, participants in FFLaunch can redeem their liquidity at the end of the event's lifecycle. Even if a project goes to zero during the event's lifecycle, FFLaunch participants can redeem the majority of their ETH, which serves as insurance for FFLaunch participants.
+
+For project teams, they can organize a professional meme operations team and operate their project tokens as meme coins during the event lifecycle. This can increase user stickiness and activity for your project, while also earning transaction fees from users to support project operations. After the event lifecycle ends, you can then empower your meme coin to become a practical token, transitioning from a meme project to a practical project, completing a magnificent transformation.
 
 ## Event Lifecycle
 
