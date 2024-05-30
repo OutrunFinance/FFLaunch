@@ -29,7 +29,7 @@ FFLaunch 将 OutrunDao 的另外两个产品 "Outstake" 和 "Outswap" 组合起�
 
 ## FFLaunch 对 Outstake 和 Outswap 的影响
 
-由于参与 FFLanch 的 ETH 与 USDB 会被质押在 Outstake 协议中，然后再预留的 token 组成 LP 并锁定与前者质押时间相同的时间。所以参与 FFLanch 用户会同时获得 Blast 原生收益并提高 Outstake 的 TVL.
+由于参与 FFLanch 的 ETH 与 USDB 会被质押在 Outstake 协议中，然后再与预留的 token 组成 LP 并锁定与前者质押时间相同的时间。所以参与 FFLanch 的用户会同时获得 Blast 原生收益并提高 Outstake 的 TVL.
 
 而 Outstake 铸造的 osETH 和 osUSD 则被锁定在 Outswap 之中。用户购买 token 需要使用 osETH 或 osUSD，这无疑会提高市场对 osETH 和 osUSD 的需求，用户会选择质押更多的 ETH 与 USDB，或者直接从 Outswap 上购买。因此 Outswap 的 TVL 与交易量也会得到提升。
 
