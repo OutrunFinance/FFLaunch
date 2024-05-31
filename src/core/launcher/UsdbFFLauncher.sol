@@ -28,11 +28,11 @@ contract UsdbFFLauncher is IUsdbFFLauncher, Ownable, GasManagerable, AutoIncreme
     address public immutable outswapV1Router;
     address public immutable outswapV1Factory;
 
-    mapping(uint256 poolID => uint256) private _tempFund;
-    mapping(uint256 poolID => LaunchPool) private _launchPools;
-    mapping(uint256 poolID => mapping(address account => uint256)) private _poolFunds;
-    mapping(uint256 poolID => mapping(address account => uint256)) private _tempFundPool;
-    mapping(uint256 poolID => mapping(address account => bool)) private _isPoolLPClaimed;
+    mapping(uint256 poolId => LaunchPool) private _launchPools;
+    mapping(uint256 poolId => uint256) private _tempFund;
+    mapping(bytes32 beacon => uint256) private _tempFundPool;
+    mapping(bytes32 beacon => uint256) private _poolFunds;
+    mapping(bytes32 beacon => bool) private _isPoolLiquidityClaimed;
 
     constructor(
         address _owner,
@@ -54,31 +54,39 @@ contract UsdbFFLauncher is IUsdbFFLauncher, Ownable, GasManagerable, AutoIncreme
         IERC20(OSUSD).approve(_outswapV1Router, type(uint256).max);
     }
 
-    function tempFund(uint256 poolId) external view override returns (uint256) {
-        return _tempFund[poolId];
-    }
-
     function launchPool(uint256 poolId) external view override returns (LaunchPool memory) {
         return _launchPools[poolId];
     }
 
+    function tempFund(uint256 poolId) external view override returns (uint256) {
+        return _tempFund[poolId];
+    }
+
     function tempFundPool(uint256 poolId, address account) external view override returns (uint256) {
-        return _tempFundPool[poolId][account];
+        return _tempFundPool[getBeacon(poolId, account)];
     }
 
-    function isPoolLPClaimed(uint256 poolId, address account) external view override returns (bool) {
-        return _isPoolLPClaimed[poolId][account];
+    function poolFunds(uint256 poolId, address account) external view override returns (uint256) {
+        return _poolFunds[getBeacon(poolId, account)];
     }
 
-    function viewMyPoolLP(uint256 poolId) external view override returns (uint256) {
+    function isPoolLiquidityClaimed(uint256 poolId, address account) external view override returns (bool) {
+        return _isPoolLiquidityClaimed[getBeacon(poolId, account)];
+    }
+
+    function viewPoolLiquidity(uint256 poolId) external view override returns (uint256) {
         LaunchPool storage pool = _launchPools[poolId];
-        return pool.totalLP * _poolFunds[poolId][msg.sender] / pool.totalActualFund;
+        return pool.totalLiquidity * _poolFunds[getBeacon(poolId, msg.sender)] / pool.totalActualFund;
+    }
+
+    function getBeacon(uint256 poolId, address account) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(poolId, account));
     }
 
     /**
      * @dev Deposit temporary fund
      */
-    function deposit() external override {
+    function depositToTempFundPool() external override {
         address msgSender = msg.sender;
         require(msgSender == tx.origin, "Only EOA account");
 
@@ -94,7 +102,7 @@ contract UsdbFFLauncher is IUsdbFFLauncher, Ownable, GasManagerable, AutoIncreme
         
         unchecked {
             _tempFund[poolId] += maxDeposit;
-            _tempFundPool[poolId][msgSender] += maxDeposit;
+            _tempFundPool[getBeacon(poolId, msgSender)] += maxDeposit;
         }
     }
 
@@ -104,16 +112,17 @@ contract UsdbFFLauncher is IUsdbFFLauncher, Ownable, GasManagerable, AutoIncreme
     function claimTokenOrFund(uint256 poolId) external override {
         address msgSender = msg.sender;
         LaunchPool storage pool = _launchPools[poolId];
-        uint128 claimDeadline = pool.claimDeadline;
-        uint128 lockupDays = pool.lockupDays;
-        uint256 currentTime = block.timestamp;
-        uint256 fund = _tempFundPool[poolId][msgSender];
+        bytes32 beacon = getBeacon(poolId, msgSender);
+        uint256 fund = _tempFundPool[beacon];
         require(fund > 0, "No fund");
 
+        _tempFund[poolId] -= fund;
+        _tempFundPool[beacon] = 0;
+
+        uint128 lockupDays = pool.lockupDays;
+        uint128 claimDeadline = pool.claimDeadline;
+        uint256 currentTime = block.timestamp;
         if (currentTime < claimDeadline) {
-            _tempFund[poolId] -= fund;
-            _tempFundPool[poolId][msgSender] = 0;
-            
             IORUSD(ORUSD).deposit(fund);
             (uint256 amountInOSUSD, ) = IORUSDStakeManager(orUSDStakeManager).stake(fund, lockupDays, msgSender, address(this), msgSender);
 
@@ -128,13 +137,11 @@ contract UsdbFFLauncher is IUsdbFFLauncher, Ownable, GasManagerable, AutoIncreme
             );
             IPoolCallee(callee).claim(amountInOSUSD, msgSender);
             unchecked {
-                pool.totalLP += uint128(liquidity);
+                pool.totalLiquidity += uint128(liquidity);
                 pool.totalActualFund += uint128(amountInOSUSD);
-                _poolFunds[poolId][msgSender] += amountInOSUSD;
+                _poolFunds[beacon] += amountInOSUSD;
             }
         } else {
-            _tempFund[poolId] -= fund;
-            _tempFundPool[poolId][msgSender] = 0;
             IERC20(USDB).safeTransfer(msgSender, fund);
         }
     }
@@ -151,21 +158,23 @@ contract UsdbFFLauncher is IUsdbFFLauncher, Ownable, GasManagerable, AutoIncreme
     }
 
     /**
-     * @dev Claim your LP by pooId when LP unlocked
+     * @dev Claim your liquidity by pooId when liquidity unlocked
      */
-    function claimPoolLP(uint256 poolId) external override {
-        LaunchPool storage pool = _launchPools[poolId];
+    function claimPoolLiquidity(uint256 poolId) external override {
         address msgSender = msg.sender;
-        uint256 fund = _poolFunds[poolId][msgSender];
-        require(!_isPoolLPClaimed[poolId][msgSender], "Already claimed");
-        require(block.timestamp >= pool.claimDeadline + pool.lockupDays * DAY, "Locked LP");
+        LaunchPool storage pool = _launchPools[poolId];
+        bytes32 beacon = getBeacon(poolId, msgSender);
+        uint256 fund = _poolFunds[beacon];
+        require(fund > 0, "No fund");
+        require(!_isPoolLiquidityClaimed[beacon], "Already claimed");
+        require(block.timestamp >= pool.claimDeadline + pool.lockupDays * DAY, "Locked liquidity");
 
-        uint256 lpAmount = pool.totalLP * fund / pool.totalActualFund;
+        uint256 lpAmount = pool.totalLiquidity * fund / pool.totalActualFund;
         address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSUSD);
-        _isPoolLPClaimed[poolId][msgSender] = true;
+        _isPoolLiquidityClaimed[beacon] = true;
         IERC20(pair).safeTransfer(msgSender, lpAmount);
 
-        emit ClaimPoolLP(poolId, msgSender, lpAmount);
+        emit ClaimPoolLiquidity(poolId, msgSender, lpAmount);
     }
 
     /**
@@ -192,7 +201,7 @@ contract UsdbFFLauncher is IUsdbFFLauncher, Ownable, GasManagerable, AutoIncreme
      * @param endTime EndTime of launchpool
      * @param maxDeposit Max fee per deposit
      * @param claimDeadline Deadline of claim token
-     * @param lockupDays LockupDay of LP
+     * @param lockupDays LockupDay of liquidity
      * @notice The callee code should be kept as concise as possible and undergo auditing to prevent malicious behavior.
      */
     function registerPool(
