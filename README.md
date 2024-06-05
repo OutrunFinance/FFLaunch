@@ -193,3 +193,5 @@ If the audit passes, the OutrunDao audit team registers a new LaunchPool with Ou
 ### LP Settlement Stage
 
 + Once the LP lockup period expires, users can call the claimPoolLP method of the FFLauncher contract to withdraw the LP tokens locked during the Claim Stage. The third-party team will no longer receive LP market-making profits.
+
+After the event lifecycle concludes, both the project team and relevant stakeholders can unlock their tokens.
