@@ -79,6 +79,37 @@ For project teams, they can organize a professional meme operations team and ope
 + Unique Marketing Approach: Meme-based operations offer innovations and flexibility that traditional marketing methods cannot achieve, allowing projects to interact and communicate with users in unique ways.
 + Flexible Operational Strategies: Project teams can adjust their operational strategies based on community reactions and market feedback, maintaining market excitement and user interest.
 
+Through meme-based operations, FFLaunch project teams can significantly enhance project visibility and market attention, increase user stickiness and activity, reduce marketing costs, enhance market liquidity, and raise token value. Additionally, meme-based operations provide project teams with unique marketing methods and flexible operational strategies, enabling projects to stand out in a highly competitive market and achieve greater success.
+
+## Benefits for Participants
+
+### As an Investor Participating in FFLaunch
++ **Free Tokens:** Investors can mint tokens by staking ETH or USDB, without needing to purchase tokens directly, making the acquisition cost extremely low, effectively getting tokens for free.
+
++ **Low-Risk Returns:** Investors' staked funds can be redeemed after the lock-up period, meaning that even if the project fails, investors can reclaim most of their initial investment, achieving very low-risk returns.
+
++ **Continuous Earnings:** During the lock-up period, staked ETH or USDB will generate native returns, distributed in the form of REY and RUY YieldTokens, providing investors with additional earnings.
+
++ **Rug Pull Prevention:** The FFLaunch model prevents project teams from absconding with raised funds, ensuring fairer token distribution and protecting investors' rights.
+
++ **Diamond Hand HODL:** Due to the long-term lock-up of staked funds, investors are passively holding tokens, benefiting from various advantages during the project's growth cycle.
+
+### As a Project Team Participating in FFLaunch
+
++ **Fair Fundraising:** By providing liquidity and a lock-up mechanism, project teams can ensure that the funds raised are more equitable and transparent.
+
++ **Continuous Cash Flow:** Project teams can receive ongoing funding support from transaction fees generated during the LP lock-up period, incentivizing them to continuously improve and maintain the project.
+
++ **Enhanced Market Liquidity:** Since tokens are obtained for free, more users are attracted to participate, increasing the depth of the liquidity pool and enhancing market liquidity.
+
++ **Market Attention:** FFLaunch offers an innovative issuance model that can attract more market attention, especially from investors who are skeptical of traditional ICO/IDO models.
+
++ **Flexibility and Innovation:** Project teams can use FFLaunch's callee interface (subject to review) to customize their launch logic, meeting specific needs and enhancing the project's uniqueness and appeal.
+
++ **User Stickiness:** Since investors passively hold tokens, even if they sell all their tokens, the LP remains locked. This ensures that users are passively following their invested project, providing potential exposure opportunities for the project.
+
++ **Meme-Based Operations:** Given the meme attributes of FFLaunch tokens, project teams can engage with and communicate with users in unique ways through meme-based operations.
+
 ## Impact of FFLaunch on Outrun Ecosystem
 
 ### 1. Increasing Outstake's TVL
