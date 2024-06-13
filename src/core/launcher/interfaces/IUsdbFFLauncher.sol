@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 interface IUsdbFFLauncher {
     struct LaunchPool {
         address token;
-        address callee;
+        address generator;
         uint128 claimDeadline;
         uint128 lockupDays;
         uint128 totalActualFund;
@@ -34,11 +34,11 @@ interface IUsdbFFLauncher {
 
     function claimPoolLiquidity(uint256 poolId) external;
 
-    function claimPoolMakerFee(uint256 poolId, address receiver) external;
+    function claimTransactionFees(uint256 poolId, address receiver) external;
 
     function registerPool(
         address token,
-        address callee,
+        address generator,
         uint64 startTime,
         uint64 endTime,
         uint128 mintFee,
@@ -48,7 +48,7 @@ interface IUsdbFFLauncher {
 
     event ClaimPoolLiquidity(uint256 indexed poolId, address account, uint256 lpAmount);
 
-    event ClaimPoolMakerFee(uint256 indexed poolId, address to, uint256 makerFee);
+    event ClaimTransactionFees(uint256 indexed poolId, address to, uint256 makerFee);
 
     event RegisterPool(uint256 indexed poolId, LaunchPool pool);
 }

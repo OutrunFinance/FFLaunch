@@ -13,7 +13,7 @@ import "../utils/OutswapV1Library.sol";
 import "../utils/IOutswapV1Router.sol";
 import "../utils/IOutswapV1Pair.sol";
 import "../utils/IORETHStakeManager.sol";
-import "../callee/IPoolCallee.sol";
+import "../generator/ITokenGenerator.sol";
 import "../token/interfaces/IFFT.sol";
 import "../../blast/GasManagerable.sol";
 
@@ -124,16 +124,16 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
             IORETH(ORETH).deposit{value: fund}();
             (uint256 amountInOSETH, ) = IORETHStakeManager(orETHStakeManager).stake(fund, lockupDays, msgSender, address(this), msgSender);
 
-            // Calling the registered Callee contract to get deployed token and mint token to user
-            address callee = pool.callee;
-            uint256 deployTokenAmount = IPoolCallee(callee).getDeployedToken(amountInOSETH);
+            // Calling the registered tokenGenerator contract to get deployed token and mint token to user
+            address generator = pool.generator;
+            uint256 generatedTokenAmount = ITokenGenerator(generator).generateLiquidityToken(amountInOSETH);
 
             address token = pool.token;
-            IERC20(token).approve(outswapV1Router, deployTokenAmount);
+            IERC20(token).approve(outswapV1Router, generatedTokenAmount);
             (,, uint256 liquidity) = IOutswapV1Router(outswapV1Router).addLiquidity(
-                OSETH, token, amountInOSETH, deployTokenAmount, amountInOSETH, deployTokenAmount, address(this), block.timestamp + 600
+                OSETH, token, amountInOSETH, generatedTokenAmount, amountInOSETH, generatedTokenAmount, address(this), block.timestamp + 600
             );
-            IPoolCallee(callee).claim(amountInOSETH, msgSender);
+            ITokenGenerator(generator).generate(amountInOSETH, msgSender);
             unchecked {
                 pool.totalLiquidity += uint128(liquidity);
                 pool.totalActualFund += uint128(amountInOSETH);
@@ -176,35 +176,35 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
     }
 
     /**
-     * @dev Claim pool maker fee
-     * @param receiver Address to receive maker fee
+     * @dev Claim transaction fees of liquidity pool
+     * @param receiver Address to receive transaction fees
      */
-    function claimPoolMakerFee(uint256 poolId, address receiver) external override {
+    function claimTransactionFees(uint256 poolId, address receiver) external override {
         address msgSender = msg.sender;
         LaunchPool storage pool = _launchPools[poolId];
-        require(msgSender == pool.callee && block.timestamp > pool.claimDeadline, "Permission denied");
+        require(msgSender == pool.generator && block.timestamp > pool.claimDeadline, "Permission denied");
 
         address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSETH);
         uint256 makerFee = IOutswapV1Pair(pair).claimMakerFee();
         IERC20(pair).safeTransfer(receiver, makerFee);
 
-        emit ClaimPoolMakerFee(poolId, receiver, makerFee);
+        emit ClaimTransactionFees(poolId, receiver, makerFee);
     }
 
     /**
      * @dev register FF launchPool
      * @param token Token address
-     * @param callee Callee address
+     * @param generator Token generator address
      * @param startTime StartTime of launchpool
      * @param endTime EndTime of launchpool
      * @param maxDeposit Max fee per deposit
      * @param claimDeadline Deadline of claim token
      * @param lockupDays LockupDay of liquidity
-     * @notice The callee code should be kept as concise as possible and undergo auditing to prevent malicious behavior.
+     * @notice The tokenGenerator code should be kept as concise as possible and undergo auditing to prevent malicious behavior.
      */
     function registerPool(
         address token,
-        address callee,
+        address generator,
         uint64 startTime,
         uint64 endTime,
         uint128 maxDeposit,
@@ -212,14 +212,14 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         uint128 lockupDays
     ) external override onlyOwner returns (uint256 poolId) {
         uint256 currentTime = block.timestamp;
-        require(token != address(0) && startTime < currentTime && endTime > currentTime, "Invalid poolInfo");
-        IPoolCallee poolCallee = IPoolCallee(callee);
-        require(poolCallee.token() == token && poolCallee.launcher() == address(this), "Invalid callee");
+        require(token != address(0) && startTime > currentTime && endTime > currentTime, "Invalid poolInfo");
+        ITokenGenerator tokenGenerator = ITokenGenerator(generator);
+        require(tokenGenerator.token() == token && tokenGenerator.launcher() == address(this), "Invalid token generator");
         uint256 currentPoolId = id;
         LaunchPool storage currentPool = _launchPools[currentPoolId];
         require(currentTime > currentPool.claimDeadline, "Last pool ongoing");
 
-        LaunchPool memory pool = LaunchPool(token, callee, claimDeadline, lockupDays, 0, 0, maxDeposit, startTime, endTime);
+        LaunchPool memory pool = LaunchPool(token, generator, claimDeadline, lockupDays, 0, 0, maxDeposit, startTime, endTime);
         poolId = nextId();
         _launchPools[poolId] = pool;
 

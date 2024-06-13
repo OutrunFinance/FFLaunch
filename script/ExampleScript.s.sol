@@ -3,27 +3,30 @@ pragma solidity ^0.8.24;
 
 import "./BaseScript.s.sol";
 import "../src/example/FF.sol";
-import "../src/example/FFPoolCallee.sol";
+import "../src/example/FFGenerator.sol";
 
 contract ExampleScript is BaseScript {
+    uint256 public constant DAY = 24 * 3600;
+
     function run() public broadcaster {
         address owner = vm.envAddress("OWNER");
         address launcher = vm.envAddress("LAUNCHER");
         address gasManager = vm.envAddress("GAS_MANAGER");
 
-        FFPoolCallee callee = new FFPoolCallee(
+        uint256 currentTime = block.timestamp;
+        FFGenerator generator = new FFGenerator(
             owner,
             launcher,
             gasManager,
-            block.timestamp + 3 days,
-            block.timestamp + 6 days
+            currentTime + 3 * DAY,
+            currentTime + 6 * DAY
         );
-        address calleeAddress = address(callee);
-        FF ff = new FF(launcher, calleeAddress, gasManager);
+        address generatorAddress = address(generator);
+        FF ff = new FF(launcher, generatorAddress, gasManager);
         address ffAddress = address(ff);
-        callee.initialize(ffAddress);
+        generator.initialize(ffAddress);
 
-        console.log("FFPoolCallee deployed on %s", calleeAddress);
+        console.log("FFGenerator deployed on %s", generatorAddress);
         console.log("FF deployed on %s", ffAddress);
     }
 }
