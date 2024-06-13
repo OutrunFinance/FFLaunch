@@ -13,14 +13,14 @@ abstract contract FFT is IFFT, GasManagerable {
     uint8 private _decimals;
     uint256 private _totalSupply;
     address private _launcher;
-    address private _callee;
-    bool private _isTransferable; // Enable after FFLaunch is completed.
+    address private _generator;
+    bool private _isTransferable;
 
     mapping(address account => uint256) private _balances;
     mapping(address account => mapping(address spender => uint256)) private _allowances;
 
-    modifier onlyCallee() {
-        require(msg.sender == _callee, "Only launchPool callee");
+    modifier onlyGenerator() {
+        require(msg.sender == _generator, "Only token generator can call");
         _;
     }
 
@@ -28,13 +28,13 @@ abstract contract FFT is IFFT, GasManagerable {
         string memory name_, 
         string memory symbol_, 
         address launcher_, 
-        address callee_,
-        address _gasManager
-    ) GasManagerable(_gasManager) {
+        address generator_,
+        address gasManager_
+    ) GasManagerable(gasManager_) {
         _name = name_;
         _symbol = symbol_;
         _launcher = launcher_;
-        _callee = callee_;
+        _generator = generator_;
     }
 
     function _msgSender() internal view returns (address) {
@@ -61,8 +61,8 @@ abstract contract FFT is IFFT, GasManagerable {
         return _launcher;
     }
 
-    function callee() public view override returns (address) {
-        return _callee;
+    function generator() public view override returns (address) {
+        return _generator;
     }
 
     function balanceOf(address account) public view override returns (uint256) {
@@ -83,7 +83,7 @@ abstract contract FFT is IFFT, GasManagerable {
         _isTransferable = true;
     }
 
-    function mint(address _account, uint256 _amount) external override onlyCallee {
+    function mint(address _account, uint256 _amount) external override onlyGenerator {
         _mint(_account, _amount);
     }
 

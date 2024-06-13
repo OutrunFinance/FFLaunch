@@ -11,7 +11,7 @@ import "./IERC20Errors.sol";
 interface IFFT is IERC20, IERC20Errors {
     function launcher() external view returns (address);
 
-    function callee() external view returns (address);
+    function generator() external view returns (address);
 
     function transferable() external view returns (bool);
 
