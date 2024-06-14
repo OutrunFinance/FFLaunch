@@ -8,7 +8,7 @@ interface IFFLauncher {
     struct LaunchPool {
         address token;              // Token address
         address generator;          // Token generator address
-        address vault;              // Remaining tokens vault
+        address timeLockVault;      // Remaining tokens time lock vault
         uint128 claimDeadline;      // Deadline of claim token
         uint128 lockupDays;         // LockupDay of liquidity
         uint128 totalLiquidityFund; // Funds(osETH|osUSD) actually added to the liquidity pool.
@@ -47,12 +47,16 @@ interface IFFLauncher {
 
     function registerPool(LaunchPool calldata poolParam) external returns (uint256 poolId);
 
+    function updateTimeLockVault(uint256 poolId, address token, address timeLockVault) external;
+
 
     event ClaimPoolLiquidity(uint256 indexed poolId, address indexed account, uint256 lpAmount);
 
     event ClaimTransactionFees(uint256 indexed poolId, address to, uint256 feeLp);
 
+    event GenerateRemainingTokens(uint256 indexed poolId, address token, address timeLockVault, uint256 remainingTokenAmount);
+
     event RegisterPool(uint256 indexed poolId, LaunchPool pool);
 
-    event GenerateRemainingTokens(uint256 indexed poolId, address token, address vault, uint256 remainingTokenAmount);
+    event UpdateTimeLockVault(uint256 indexed poolId, address timeLockVault);
 }

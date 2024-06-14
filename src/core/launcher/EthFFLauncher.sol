@@ -217,11 +217,13 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
 
     /**
      * @dev Generate remaining tokens after FFLaunch event
-     * @param poolId Launch pool id
+     * @param poolId LaunchPool id
      * @notice Only generator can call, only can call once
      */
     function generateRemainingTokens(uint256 poolId) external returns (uint256 remainingTokenAmount) {
         LaunchPool storage pool = _launchPools[poolId];
+        uint256 sharePercent = pool.sharePercent;
+        require(sharePercent < RATIO, "No more token");
         require(!pool.areAllGenerated, "Already generated");
         address msgSender = msg.sender;
         require(msgSender == pool.generator, "Permission denied");
@@ -230,7 +232,6 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         pool.areAllGenerated = true;
         uint256 totalSupply = pool.totalSupply;
         uint256 mintedAmount = pool.mintedAmount;
-        uint256 sharePercent = pool.sharePercent;
         if (totalSupply == 0) {
             remainingTokenAmount = (RATIO - sharePercent) * mintedAmount / sharePercent;
         } else {
@@ -238,10 +239,10 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         }
         
         address token = pool.token;
-        address vault = pool.vault;
-        IFFT(token).mint(vault, remainingTokenAmount);
+        address timeLockVault = pool.timeLockVault;
+        IFFT(token).mint(timeLockVault, remainingTokenAmount);
 
-        emit GenerateRemainingTokens(poolId, token, vault, remainingTokenAmount);
+        emit GenerateRemainingTokens(poolId, token, timeLockVault, remainingTokenAmount);
     }
 
     /**
@@ -268,7 +269,7 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         LaunchPool memory pool = LaunchPool(
             token,
             generator,
-            poolParam.vault,
+            poolParam.timeLockVault,
             poolParam.claimDeadline,
             poolParam.lockupDays,
             0,
@@ -285,6 +286,22 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         _launchPools[poolId] = pool;
 
         emit RegisterPool(poolId, pool);
+    }
+
+    /**
+     * @dev Update timeLockVault address
+     * @param poolId LaunchPool id
+     * @param token Token address
+     * @param timeLockVault TimeLockVault contract address
+     * @notice The address can only be updated after the TimeLockVault contract is reviewed by the Outrun audit team.
+     */
+    function updateTimeLockVault(uint256 poolId, address token, address timeLockVault) external override onlyOwner {
+        LaunchPool storage pool = _launchPools[poolId];
+        require(pool.token == token, "Token mismatch");
+        require(block.timestamp <= pool.claimDeadline + pool.lockupDays * DAY, "Time exceeded");
+        pool.timeLockVault = timeLockVault;
+
+        emit UpdateTimeLockVault(poolId, timeLockVault);
     }
 
     receive() external payable {
