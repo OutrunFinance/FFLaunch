@@ -198,7 +198,7 @@ FFLaunch 通过质押 ETH 和 USDB 来提高 Outstake 的 TVL，增强 osETH 和
 
 **7. 剩余代币生成阶段**
 
-+ 在 LP 解锁阶段持续 7 天之后进入此阶段阶段，此时项目团队可以调用 FFLauncher 合约的 generateRemainingTokens 方法向 TimeLockVault 合约铸造剩余代币。
++ 在 LP 解锁阶段持续 7 天之后进入此阶段，此时项目团队可以调用 FFLauncher 合约的 generateRemainingTokens 方法向 TimeLockVault 合约铸造剩余代币。
 
 + 如果 Token 是初始全流通的，则无法再铸造更多的 Token.
 
