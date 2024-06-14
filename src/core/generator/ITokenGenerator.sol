@@ -19,22 +19,21 @@ interface ITokenGenerator {
      * @dev Generate the tokens to be added to the liquidity pool
      * @param deployFundAmount - Amount of deployed fund
      */
-    function generateLiquidityToken(uint256 deployFundAmount) external returns (uint256);
+    function generateLiquidityToken(uint256 deployFundAmount) external returns (uint256 liquidityTokenAmount);
 
     /**
-     * @dev Generate the token when user claim token
+     * @dev Generate the token when investor claim token
      * @param deployFundAmount Amount of deployed fund
      * @param receiver Investor address to receive the token
      * @notice MUST only FFLauncher can call this function
      */
-    function generate(uint256 deployFundAmount, address receiver) external;
+    function generateInvestorToken(uint256 deployFundAmount, address receiver) external returns (uint256 investorTokenAmount);
 
     /**
      * @dev Generate remaining tokens after FFLaunch event
-     * @param vault - Time locked vault address to receive the token
-     * @notice MUST can only be called once
+     * @param poolId Launch pool id
      */
-    function generateRemainingTokens(address vault) external;
+    function generateRemainingTokens(uint256 poolId) external returns (uint256 remainingTokenAmount);
 
     /**
      * @dev Claim transaction fees through FFLauncher

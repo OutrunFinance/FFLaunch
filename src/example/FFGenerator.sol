@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "../core/generator/ITokenGenerator.sol";
 import "../core/utils/Initializable.sol";
 import "../core/token/interfaces/IFFT.sol";
-import "../core/launcher/interfaces/IEthFFLauncher.sol";
+import "../core/launcher/interfaces/IFFLauncher.sol";
 import "../blast/GasManagerable.sol";
 
 /**
@@ -65,11 +65,9 @@ contract FFGenerator is ITokenGenerator, Ownable, GasManagerable, Initializable 
      * @dev Generate the tokens to be added to the liquidity pool
      * @param deployFundAmount - Amount of deployed fund
      */
-    function generateLiquidityToken(uint256 deployFundAmount) external override onlyLauncher returns (uint256) {
-        uint256 generatedTokenAmount = deployFundAmount * AMOUNT_BASED_ETH;
-        IFFT(_token).mint(LAUNCHER, generatedTokenAmount);
-
-        return generatedTokenAmount;
+    function generateLiquidityToken(uint256 deployFundAmount) external override onlyLauncher returns (uint256 liquidityTokenAmount) {
+        liquidityTokenAmount = deployFundAmount * AMOUNT_BASED_ETH;
+        IFFT(_token).mint(LAUNCHER, liquidityTokenAmount);
     }
 
     /**
@@ -78,25 +76,25 @@ contract FFGenerator is ITokenGenerator, Ownable, GasManagerable, Initializable 
      * @param receiver Investor address to receive the token
      * @notice MUST only FFLauncher can call this function
      */
-    function generate(uint256 deployFundAmount, address receiver) external override onlyLauncher {
+    function generateInvestorToken(uint256 deployFundAmount, address receiver) external override onlyLauncher returns (uint256 investorTokenAmount) {
         uint256 currentTime = block.timestamp;
         address tokenAddress = _token;
         if (currentTime <= _checkPoint0) {
-            IFFT(tokenAddress).mint(receiver, deployFundAmount * AMOUNT_PER_MINT_0);
+            investorTokenAmount = deployFundAmount * AMOUNT_PER_MINT_0;
         } else if (currentTime <= _checkPoint1) {
-            IFFT(tokenAddress).mint(receiver, deployFundAmount * AMOUNT_PER_MINT_1);
+            investorTokenAmount = deployFundAmount * AMOUNT_PER_MINT_1;
         } else {
-            IFFT(tokenAddress).mint(receiver, deployFundAmount * AMOUNT_PER_MINT_2);
+            investorTokenAmount = deployFundAmount * AMOUNT_PER_MINT_2;
         }
+
+        IFFT(tokenAddress).mint(receiver, investorTokenAmount);
     }
 
     /**
      * @dev Generate remaining tokens after FFLaunch event
-     * @param vault - Time locked vault address to receive the token
-     * @notice MUST can only be called once
      */
-    function generateRemainingTokens(address vault) external override onlyOwner {
-
+    function generateRemainingTokens(uint256 poolId) external override onlyOwner returns (uint256 remainingTokenAmount) {
+        return IFFLauncher(LAUNCHER).generateRemainingTokens(poolId);
     }
 
     /**
@@ -104,6 +102,6 @@ contract FFGenerator is ITokenGenerator, Ownable, GasManagerable, Initializable 
      * @param receiver - Address to receive transaction fees
      */
     function claimTransactionFees(uint256 poolId, address receiver) external override onlyOwner {
-        IEthFFLauncher(LAUNCHER).claimTransactionFees(poolId, receiver);
+        IFFLauncher(LAUNCHER).claimTransactionFees(poolId, receiver);
     }
 }
