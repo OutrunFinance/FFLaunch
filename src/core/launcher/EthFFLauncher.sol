@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "./interfaces/IEthFFLauncher.sol";
+import "./interfaces/IFFLauncher.sol";
 import "../utils/IORETH.sol";
 import "../utils/AutoIncrementId.sol";
 import "../utils/OutswapV1Library.sol";
@@ -17,10 +17,14 @@ import "../generator/ITokenGenerator.sol";
 import "../token/interfaces/IFFT.sol";
 import "../../blast/GasManagerable.sol";
 
-contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrementId {
+/**
+ * @title EthFFLauncher
+ */
+contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId {
     using SafeERC20 for IERC20;
 
     uint256 public constant DAY = 24 * 3600;
+    uint256 public constant RATIO = 10000;
     address public immutable ORETH;
     address public immutable OSETH;
     address public immutable orETHStakeManager;
@@ -74,7 +78,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
 
     function viewPoolLiquidity(uint256 poolId) external view override returns (uint256) {
         LaunchPool storage pool = _launchPools[poolId];
-        return pool.totalLiquidity * _poolFunds[getBeacon(poolId, msg.sender)] / pool.totalActualFund;
+        return pool.totalLiquidityLP * _poolFunds[getBeacon(poolId, msg.sender)] / pool.totalLiquidityFund;
     }
 
     function getBeacon(uint256 poolId, address account) internal pure returns (bytes32) {
@@ -84,7 +88,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
     /**
      * @dev Deposit temporary fund
      */
-    function depositToTempFundPool() public payable override {
+    function depositToTempFundPool() public payable {
         address msgSender = msg.sender;
         require(msgSender == tx.origin, "Only EOA account");
 
@@ -117,27 +121,46 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         _tempFund[poolId] -= fund;
         _tempFundPool[beacon] = 0;
 
-        uint128 lockupDays = pool.lockupDays;
         uint128 claimDeadline = pool.claimDeadline;
+        uint128 lockupDays = pool.lockupDays;
         uint256 currentTime = block.timestamp;
         if (currentTime < claimDeadline) {
             IORETH(ORETH).deposit{value: fund}();
-            (uint256 amountInOSETH, ) = IORETHStakeManager(orETHStakeManager).stake(fund, lockupDays, msgSender, address(this), msgSender);
+            (uint256 amountInOSETH,) =
+                IORETHStakeManager(orETHStakeManager).stake(fund, lockupDays, msgSender, address(this), msgSender);
 
-            // Calling the registered tokenGenerator contract to get deployed token and mint token to user
+            // Calling the registered tokenGenerator contract to get liquidity token and mint token to user
             address generator = pool.generator;
-            uint256 generatedTokenAmount = ITokenGenerator(generator).generateLiquidityToken(amountInOSETH);
+            uint256 liquidityTokenAmount = ITokenGenerator(generator).generateLiquidityToken(amountInOSETH);
 
             address token = pool.token;
-            IERC20(token).approve(outswapV1Router, generatedTokenAmount);
+            IERC20(token).approve(outswapV1Router, liquidityTokenAmount);
             (,, uint256 liquidity) = IOutswapV1Router(outswapV1Router).addLiquidity(
-                OSETH, token, amountInOSETH, generatedTokenAmount, amountInOSETH, generatedTokenAmount, address(this), block.timestamp + 600
+                OSETH,
+                token,
+                amountInOSETH,
+                liquidityTokenAmount,
+                amountInOSETH,
+                liquidityTokenAmount,
+                address(this),
+                block.timestamp + 600
             );
-            ITokenGenerator(generator).generate(amountInOSETH, msgSender);
+            uint256 investorTokenAmount = ITokenGenerator(generator).generateInvestorToken(amountInOSETH, msgSender);
+
             unchecked {
-                pool.totalLiquidity += uint128(liquidity);
-                pool.totalActualFund += uint128(amountInOSETH);
+                pool.totalLiquidityLP += uint128(liquidity);
+                pool.totalLiquidityFund += uint128(amountInOSETH);
                 _poolFunds[beacon] += amountInOSETH;
+
+                uint256 mintedAmount = pool.mintedAmount + liquidityTokenAmount + investorTokenAmount;
+                uint256 totalSupply = pool.totalSupply;
+
+                // if totalSupply == 0, indicates an unlimited amount of mintable tokens
+                if (totalSupply != 0) {
+                    uint256 mintableAmount = totalSupply * pool.sharePercent / RATIO;
+                    require(mintedAmount <= mintableAmount, "Insufficient amount of mintable tokens");
+                }
+                pool.mintedAmount = mintedAmount;
             }
         } else {
             Address.sendValue(payable(msgSender), fund);
@@ -167,7 +190,7 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
         require(!_isPoolLiquidityClaimed[beacon], "Already claimed");
         require(block.timestamp >= pool.claimDeadline + pool.lockupDays * DAY, "Locked liquidity");
 
-        uint256 lpAmount = pool.totalLiquidity * fund / pool.totalActualFund;
+        uint256 lpAmount = pool.totalLiquidityLP * fund / pool.totalLiquidityFund;
         address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSETH);
         _isPoolLiquidityClaimed[beacon] = true;
         IERC20(pair).safeTransfer(msgSender, lpAmount);
@@ -182,44 +205,82 @@ contract EthFFLauncher is IEthFFLauncher, Ownable, GasManagerable, AutoIncrement
     function claimTransactionFees(uint256 poolId, address receiver) external override {
         address msgSender = msg.sender;
         LaunchPool storage pool = _launchPools[poolId];
-        require(msgSender == pool.generator && block.timestamp > pool.claimDeadline, "Permission denied");
+        require(msgSender == pool.generator, "Permission denied");
+        require(block.timestamp > pool.claimDeadline, "After claimDeadline");
 
         address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSETH);
-        uint256 makerFee = IOutswapV1Pair(pair).claimMakerFee();
-        IERC20(pair).safeTransfer(receiver, makerFee);
+        uint256 feeLp = IOutswapV1Pair(pair).claimMakerFee();
+        IERC20(pair).safeTransfer(receiver, feeLp);
 
-        emit ClaimTransactionFees(poolId, receiver, makerFee);
+        emit ClaimTransactionFees(poolId, receiver, feeLp);
+    }
+
+    /**
+     * @dev Generate remaining tokens after FFLaunch event
+     * @param poolId Launch pool id
+     * @notice Only generator can call, only can call once
+     */
+    function generateRemainingTokens(uint256 poolId) external returns (uint256 remainingTokenAmount) {
+        LaunchPool storage pool = _launchPools[poolId];
+        require(!pool.areAllGenerated, "Already generated");
+        address msgSender = msg.sender;
+        require(msgSender == pool.generator, "Permission denied");
+        require(block.timestamp >= pool.claimDeadline + (pool.lockupDays + 7) * DAY, "Time not reached");
+
+        pool.areAllGenerated = true;
+        uint256 totalSupply = pool.totalSupply;
+        uint256 mintedAmount = pool.mintedAmount;
+        uint256 sharePercent = pool.sharePercent;
+        if (totalSupply == 0) {
+            remainingTokenAmount = (RATIO - sharePercent) * mintedAmount / sharePercent;
+        } else {
+            remainingTokenAmount = totalSupply - mintedAmount;
+        }
+        
+        address token = pool.token;
+        address vault = pool.vault;
+        IFFT(token).mint(vault, remainingTokenAmount);
+
+        emit GenerateRemainingTokens(poolId, token, vault, remainingTokenAmount);
     }
 
     /**
      * @dev register FF launchPool
-     * @param token Token address
-     * @param generator Token generator address
-     * @param startTime StartTime of launchpool
-     * @param endTime EndTime of launchpool
-     * @param maxDeposit Max fee per deposit
-     * @param claimDeadline Deadline of claim token
-     * @param lockupDays LockupDay of liquidity
+     * @param poolParam Pool param
      * @notice The tokenGenerator code should be kept as concise as possible and undergo auditing to prevent malicious behavior.
      */
-    function registerPool(
-        address token,
-        address generator,
-        uint64 startTime,
-        uint64 endTime,
-        uint128 maxDeposit,
-        uint128 claimDeadline,
-        uint128 lockupDays
-    ) external override onlyOwner returns (uint256 poolId) {
+    function registerPool(LaunchPool calldata poolParam) external override onlyOwner returns (uint256 poolId) {
         uint256 currentTime = block.timestamp;
+        address token = poolParam.token;
+        uint64 startTime = poolParam.startTime;
+        uint64 endTime = poolParam.endTime;
         require(token != address(0) && startTime > currentTime && endTime > currentTime, "Invalid poolInfo");
+
+        address generator = poolParam.generator;
         ITokenGenerator tokenGenerator = ITokenGenerator(generator);
         require(tokenGenerator.token() == token && tokenGenerator.launcher() == address(this), "Invalid token generator");
-        uint256 currentPoolId = id;
-        LaunchPool storage currentPool = _launchPools[currentPoolId];
-        require(currentTime > currentPool.claimDeadline, "Last pool ongoing");
 
-        LaunchPool memory pool = LaunchPool(token, generator, claimDeadline, lockupDays, 0, 0, maxDeposit, startTime, endTime);
+        uint256 currentPoolId = id;
+        if (currentPoolId != 0) {
+            require(currentTime > _launchPools[currentPoolId].claimDeadline, "Last pool ongoing");
+        }
+
+        LaunchPool memory pool = LaunchPool(
+            token,
+            generator,
+            poolParam.vault,
+            poolParam.claimDeadline,
+            poolParam.lockupDays,
+            0,
+            0,
+            poolParam.maxDeposit,
+            startTime,
+            endTime,
+            poolParam.totalSupply,
+            poolParam.sharePercent,
+            poolParam.mintedAmount,
+            false
+        );
         poolId = nextId();
         _launchPools[poolId] = pool;
 
