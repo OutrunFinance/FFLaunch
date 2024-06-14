@@ -95,11 +95,9 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         uint256 msgValue = msg.value;
         uint256 poolId = id;
         LaunchPool storage pool = _launchPools[poolId];
-        uint64 startTime = pool.startTime;
-        uint64 endTime = pool.endTime;
-        uint128 maxDeposit = pool.maxDeposit;
         uint256 currentTime = block.timestamp;
-        require(currentTime > startTime && currentTime < endTime, "Invalid time");
+        uint128 maxDeposit = pool.maxDeposit;
+        require(currentTime > pool.startTime && currentTime < pool.endTime, "Invalid time");
         require(msgValue <= maxDeposit, "Invalid vaule");
 
         unchecked {
@@ -131,8 +129,8 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
 
             // Calling the registered tokenGenerator contract to get liquidity token and mint token to user
             address generator = pool.generator;
+            uint256 investorTokenAmount = ITokenGenerator(generator).generateInvestorToken(amountInOSETH, msgSender);
             uint256 liquidityTokenAmount = ITokenGenerator(generator).generateLiquidityToken(amountInOSETH);
-
             address token = pool.token;
             IERC20(token).approve(outswapV1Router, liquidityTokenAmount);
             (,, uint256 liquidity) = IOutswapV1Router(outswapV1Router).addLiquidity(
@@ -145,7 +143,6 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
                 address(this),
                 block.timestamp + 600
             );
-            uint256 investorTokenAmount = ITokenGenerator(generator).generateInvestorToken(amountInOSETH, msgSender);
 
             unchecked {
                 pool.totalLiquidityLP += uint128(liquidity);

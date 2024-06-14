@@ -53,7 +53,6 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
         outswapV1Factory = _outswapV1Factory;
         orUSDStakeManager = _orUSDStakeManager;
 
-        IERC20(USDB).approve(address(this), type(uint256).max);
         IERC20(ORUSD).approve(_orUSDStakeManager, type(uint256).max);
         IERC20(OSUSD).approve(_outswapV1Router, type(uint256).max);
     }
@@ -90,23 +89,21 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
     /**
      * @dev Deposit temporary fund
      */
-    function depositToTempFundPool() external {
+    function depositToTempFundPool(uint256 value) external {
         address msgSender = msg.sender;
         require(msgSender == tx.origin, "Only EOA account");
 
         uint256 poolId = id;
         LaunchPool storage pool = _launchPools[poolId];
-        uint64 startTime = pool.startTime;
-        uint64 endTime = pool.endTime;
-        uint128 maxDeposit = pool.maxDeposit;
         uint256 currentTime = block.timestamp;
-        require(currentTime > startTime && currentTime < endTime, "Invalid time");
-
-        IERC20(USDB).safeTransferFrom(msgSender, address(this), maxDeposit);
+        uint128 maxDeposit = pool.maxDeposit;
+        require(currentTime > pool.startTime && currentTime < pool.endTime, "Invalid time");
+        require(value <= maxDeposit, "Invalid vaule");
+        IERC20(USDB).safeTransferFrom(msgSender, address(this), value);
 
         unchecked {
-            _tempFund[poolId] += maxDeposit;
-            _tempFundPool[getBeacon(poolId, msgSender)] += maxDeposit;
+            _tempFund[poolId] += value;
+            _tempFundPool[getBeacon(poolId, msgSender)] += value;
         }
     }
 
@@ -133,8 +130,8 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
 
             // Calling the registered tokenGenerator contract to get liquidity token and mint token to user
             address generator = pool.generator;
+            uint256 investorTokenAmount = ITokenGenerator(generator).generateInvestorToken(amountInOSUSD, msgSender);
             uint256 liquidityTokenAmount = ITokenGenerator(generator).generateLiquidityToken(amountInOSUSD);
-
             address token = pool.token;
             IERC20(token).approve(outswapV1Router, liquidityTokenAmount);
             (,, uint256 liquidity) = IOutswapV1Router(outswapV1Router).addLiquidity(
@@ -147,7 +144,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
                 address(this),
                 block.timestamp + 600
             );
-            uint256 investorTokenAmount = ITokenGenerator(generator).generateInvestorToken(amountInOSUSD, msgSender);
+            
             unchecked {
                 pool.totalLiquidityLP += uint128(liquidity);
                 pool.totalLiquidityFund += uint128(amountInOSUSD);
