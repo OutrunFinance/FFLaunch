@@ -46,6 +46,7 @@ Meme coin 在 web3 是一种很有意思的资产，人们总是对 Meme coin �
 对于项目方来说，可以组织专业的 Meme 运营团队，在事件生命周期里，把自己的项目代币当成 Meme coin 来运营，增加你的项目的用户粘性与活跃度，并且还能获得来自用户的交易手续费以支持项目的运营。而在事件生命周期结束后则为你的 Meme coin "赋能"，让它变成实用的代币，完成 Meme 项目到实用项目的过渡，完成一场华丽的转身。
 
 ## Meme 化运营的优势
+
 **1. 吸引广泛关注**
 
 + 病毒式传播：Meme coin 因其有趣和娱乐性容易在社交媒体上迅速传播，吸引大量关注和讨论，提升项目的知名度。
@@ -140,56 +141,65 @@ Meme coin 在 web3 是一种很有意思的资产，人们总是对 Meme coin �
 + 这种策略将吸引更多用户参与，从而增加整个生态系统的活跃度和价值。
 
 ### 总结
+
 FFLaunch 通过质押 ETH 和 USDB 来提高 Outstake 的 TVL，增强 osETH 和 osUSD 的市场需求，并通过长期锁定 LP 来培养用户的交易习惯。这一系列措施将促进 Outrun 生态系统的繁荣，并打破当前 LST 使用场景的限制，为用户提供更多元化和有吸引力的选择。
 
 ## 事件生命周期
 
-在 FFLaunch 事件的生命周期中一共有 3 个实体，6 个阶段。
+在 FFLaunch 事件的生命周期中一共有 3 个实体，7 个阶段。
 
-**实体：**
+### 实体
 
-1. 用户  
-2. Outrun FFLauncher  
-3. 第三方团队
+1. 投资者
+2. Outrun 审核团队
+3. 项目团队
 
-**阶段：**
+### 阶段
 
-1. 申请阶段  
-2. 审核阶段  
-3. Deposit 阶段  
-4. Claim 阶段  
-5. 开放交易阶段  
-6. LP 解锁阶段
+**1. 申请阶段**
 
-### 申请阶段
++ 项目团队编写 TokenGenerator, Token 以及 TimeLockVault 合约，TokenGenerator 合约需要实现 ITokenGenerator 接口，Token 合约需要继承 FFT 合约（可重写部分方法），TimeLockVault 合约为 LaunchPool 之外的剩余代币的锁定金库合约（剩余 Token 生成阶段之前可以向 Outrun 审核团队申请更新 TimeLockVault 合约地址）。
 
-+ 第三方团队编写 Callee 与 Token 合约，Callee 合约需要实现 IPoolCallee 接口，Token 合约需要继承 FFT 合约（可重写部分方法）。
-+ 第三方团队向申请上线 Outrun FFLauncher，需要提交项目与团队详细资料以及 Callee 与 Token 合约，并持续与 OutrunDao 审核团队交流。
++ 项目团队向 Outrun 团队申请上线 FFLauncher，需要提交项目与团队详细资料以及 TokenGenerator, Token, TimeLockVault 合约，并持续与 Outrun 审核团队交流。
 
-### 审核阶段
+**2. 审核阶段**
 
-+ OutrunDao 审核团队将详细审核第三方团队提交的相关资料并与第三方团队交流。
-+ OutrunDao 审核团队将审计第三方团队提交的 Callee 与 Token 合约，检查是否为恶意合约或者存在安全漏洞。
-+ OutrunDao 审核团队将检查 Token 的释放情况，在 LP 锁定期间，不得释放新的代币。
-+ 若审核未通过，OutrunDao 审核团队将会对第三方团队提出修改建议，第三方团队需要重新申请。
-+ 若审核通过，OutrunDao 审核团队将会向 Outrun FFLauncher 注册新的LaunchPool.
++ Outrun 审核团队将详细审核项目团队提交的相关资料。
 
-### Deposit 阶段
++ Outrun 审核团队将审计项目团队提交的 TokenGenerator, Token 以及 TimeLockVault 合约，检查是否安全和合规。
 
-+ 当区块时间在已注册的 Pool 的 startTime 与 endTime 之间时，用户可以调用 FFLauncher 合约的 deposit 方法，向该 Pool 的临时资金池存款。需要注意的是 Deposit 阶段和 Claim 阶段有部分时间是重合的。
++ Outrun 审核团队将检查 Token 的释放情况，确保在 LP 锁定期间不会释放新的代币。
 
-### Claim 阶段
++ 若审核未通过，Outrun 审核团队将会对项目团队提出相关反馈，项目团队需要重新申请。
 
-+ 当区块时间在已注册的 Pool 的 claimDeadline 之前时，用户可以调用 FFLauncher 合约的 claimTokenOrFund 方法，将自己在临时资金池中的存款质押到 Outstake 中以获取流动性质押代币与 YieldToken, 并调用第三方团队注册的 Callee 合约向 Outswap 添加流动性，LP将会锁定在 FFLauncher 合约中。然后用户会获得第三方团队的 Token.
-+ 当区块时间在已注册的 Pool 的 claimDeadline 之后时，此时已经是开放交易阶段， 用户无法再 Claim 第三方团队的 Token，而是会执行 Refund 操作，将自己在临时资金池中的资金取出来。
++ 若审核通过，Outrun 审核团队将会向 FFLauncher 注册新的 LaunchPool.
 
-### 开放交易阶段
+**3. Deposit 阶段**
 
-+ Claim 阶段结束后，第三方团队打开交易开关，此时 Token 可转移，Token 可以自由交易。
-+ 在这个阶段期间，锁定在 FFLauncher 合约中的 LP 所产生的做市收益会由第三方团队获得，即第三方团队募集到的资金。
++ 当区块时间在已注册的 LaunchPool 的 startTime 与 endTime 之间时，投资者可以调用 FFLauncher 合约的 depositToTempFundPool 方法，向该 LaunchPool 的临时资金池存款。需要注意的是 Deposit 阶段和 Claim 阶段的部分时间是重合的。
 
-### LP 解锁阶段
+**4. Claim 阶段**
 
-+ 当 LP 锁定时间到期后，用户可以调用 FFLauncher 合约的 claimPoolLP 方法，将自己在 Claim 阶段锁定的 LP 提取出来。第三方团队不会再获得 LP 所产生的做市收益。这个阶段将会持续一段时间，为 FFLaunch 参与者的决策提供充足的时间。
++ 当区块时间在已注册的 LaunchPool 的 claimDeadline 之前时，投资者可以调用 FFLauncher 合约的 claimTokenOrFund 方法，将自己在临时资金池中的存款质押到 Outstake 中以获取流动性质押代币与 YieldToken, 同调用项目团队注册的 TokenGenerator 合约生成对应数量的 Token，一部分 Token 会与用户的资金在 Outswap 上添加流动性，LP将会锁定在 FFLauncher 合约中，另一部分 Token 会直接发送给用户。
 
-**事件生命周期结束后，项目方和相关利益方才可以解锁自己的代币**
++ 当区块时间在已注册的 LaunchPool 的 claimDeadline 之后时，此时已经是开放交易阶段，用户无法再 Claim 项目团队的 Token，而是会执行 Refund 操作，将自己在临时资金池中的资金取出来。
+
+**5. 开放交易阶段**
+
++ Claim 阶段结束后，任何人都可以 FFLauncher 的 enablePoolTokenTransfer 方法打开交易开关，此时 Token 可以自由交易。
+
++ 在这个阶段期间，锁定在 FFLauncher 合约中的 LP 所产生的做市收益归项目团队所有，即项目团队募集到的持续现金流。
+
+**6. LP 解锁阶段**
+
++ 当 LP 锁定时间到期后，用户可以调用 FFLauncher 合约的 claimPoolLiquidity 方法，将自己在 Claim 阶段锁定的 LP 提取出来。
+
++ 项目团队不再获取LP的做市收益。
+
+**7. 剩余代币生成阶段**
+
++ 在 LP 解锁阶段持续 7 天之后进入此阶段阶段，此时项目团队可以调用 FFLauncher 合约的 generateRemainingTokens 方法向 TimeLockVault 合约铸造剩余代币。
+
++ 如果 Token 是初始全流通的，则无法再铸造更多的 Token.
+
+**这些阶段和实体共同定义了 FFLaunch 事件的完整生命周期，确保项目在整个执行过程中的安全性、透明度和合规性.**

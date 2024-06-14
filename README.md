@@ -143,55 +143,60 @@ Many Liquidity Staking Tokens (LSTs) face limitations in their usage scenarios, 
 
 ## Event Lifecycle
 
-There are a total of 3 entities and 6 stages in the lifecycle of the FFLaunch event.
+In the lifecycle of the FFLaunch event, there are a total of 3 entities and 7 stages:
 
-Entities:
+### Entities
 
-1. Investor  
-2. Outrun FFLauncher  
-3. Third-party team
+1. Investors  
+2. Outrun Audit Team
+3. Project Team
 
-Stages:
+### Stages
 
-1. Apply Stage  
-2. Audit Stage  
-3. Deposit Stage  
-4. Claim Stage  
-5. Open Trading Stage  
-6. LP Settlement Stage
+**1. Apply Stage**
 
-### Apply Stage
++ The project team develops TokenGenerator, Token, and TimeLockVault contracts. The TokenGenerator contract must implement the ITokenGenerator interface, and the Token contract inherits from the FFT contract (override certain methods). The TimeLockVault contract serves as a treasury for leftover tokens outside LaunchPool (can be updated before the remaining token generation stage by applying to the Outrun Audit Team).
 
-+ Third-party team develops Callee and Token contracts. The Callee contract must implement the IPoolCallee interface, while the Token contract should inherit from the FFT contract (with the ability to override certain methods).
++ The project team applies to the Outrun team for FFLaunch listing, submitting detailed project and team information along with TokenGenerator, Token, and TimeLockVault contracts, and maintains ongoing communication with the Outrun Audit Team.
 
-+ Third-party team applies to list on Outrun FFLauncher, submitting detailed project and team information along with the Callee and Token contracts. Continuous communication with the OutrunDao audit team is required.
+**2. Audit Stage**
 
-### Audit Stage
++ The Outrun Audit Team thoroughly reviews the submitted project team materials.
 
-+ The OutrunDao audit team thoroughly reviews the submitted materials from the third-party team and engages in communication with them.
++ The Outrun Audit Team audits the TokenGenerator, Token, and TimeLockVault contracts to ensure safety and compliance.
 
-+ The OutrunDao audit team conducts an audit of the Callee and Token contracts submitted by the third-party team, checking for malicious contracts or security vulnerabilities.
-If the audit fails, the OutrunDao audit team provides modification suggestions to the third-party team, which must then reapply.
-If the audit passes, the OutrunDao audit team registers a new LaunchPool with Outrun FFLauncher.
++ The release conditions of the Token are checked to ensure that no new tokens are released during the LP lock period.
 
-### Deposit Stage
++ If the audit does not pass, the Outrun Audit Team provides feedback to the project team, who then need to reapply.
 
-+ During the time between the registered Pool's startTime and endTime, users can call the deposit method of the FFLauncher contract to deposit funds into the temporary pool of that Pool. It's important to note that there is some overlap in time between the Deposit and Claim stages.
++ Upon successful audit, the Outrun Audit Team registers a new LaunchPool in the FFLauncher.
 
-### Claim Stage
+**3. Deposit Stage**
 
-+ Before the claimDeadline of the registered Pool, users can call the claimTokenOrFund method of the FFLauncher contract to stake their deposits in the temporary fund pool to Outstake in order to obtain liquidity staking tokens and YieldTokens. They also invoke the Callee contract registered by the third-party team to add liquidity to Outswap. The LP will be locked in the FFLauncher contract. Subsequently, users will receive tokens from the third-party team.
++ During the block time between the registered LaunchPool's startTime and endTime, investors can deposit funds into the temporary fund pool of that LaunchPool using the FFLauncher contract's depositToTempFundPool method. It is important to note that the Deposit stage overlaps partially with the Claim stage in terms of time.
 
-+ After the claimDeadline of the registered Pool, it is the open trading stage. Users cannot claim tokens from the third-party team anymore. Instead, they will execute a refund operation to withdraw their funds from the temporary fund pool.
+**4. Claim Stage**
 
-### Open Trading Stage
++ Before the block time reaches the claimDeadline of the registered LaunchPool, investors can use the FFLauncher contract's claimTokenOrFund method to stake their deposits from the temporary fund pool into Outstake to receive liquidity staking tokens and YieldToken. Simultaneously, the TokenGenerator contract registered by the project team generates a corresponding amount of tokens. Part of these tokens are used to provide liquidity on Outswap with the investor's funds, while the LP is locked in the FFLauncher contract. Another part of the tokens is directly distributed to the investor.
 
-+ After the Claim Stage, the third-party team opens the trading switch, allowing tokens to be transferred freely and traded.
++ After the block time reaches the claimDeadline of the registered LaunchPool, the stage transitions to the Open Trading stage. Investors can no longer claim tokens from the project team but can execute refund operations to withdraw their funds from the temporary fund pool.
 
-+ During this stage, the market-making profits generated by the LP locked in the FFLauncher contract will be obtained by the third-party team, constituting the funds raised by the third-party team.
+**5. Open Trading Stage**
 
-### LP Settlement Stage
++ Following the conclusion of the Claim stage, anyone can use the FFLauncher contract's enablePoolTokenTransfer method to enable token trading. Tokens can now be freely traded.
 
-+ Once the LP lockup period expires, users can call the claimPoolLP method of the FFLauncher contract to withdraw the LP tokens locked during the Claim Stage. The third-party team will no longer receive LP market-making profits.
++ During this stage, the liquidity provider (LP) earnings locked in the FFLauncher contract accrue to the project team, providing continuous cash flow from the funds raised.
 
-After the event lifecycle concludes, both the project team and relevant stakeholders can unlock their tokens.
+**6. LP Unlock Stage**
+
++ Upon the expiration of the LP lock period, investors can use the FFLauncher contract's claimPoolLiquidity method to withdraw their LP tokens that were locked during the Claim stage.
+
++ The project team no longer receives LP earnings from this point onward.
+
+**7. Remaining Token Generation Stage**
+
++ This stage begins 7 days after entering the LP Unlock stage. During this phase, the project team can use the FFLauncher contract's generateRemainingTokens method to mint remaining tokens into the TimeLockVault contract.
+
++ If the token is initially fully circulating, no additional tokens can be minted.
+
+**These stages and entities collectively define the complete lifecycle of the FFLaunch event, ensuring the project's security, transparency, and compliance throughout its execution.**
