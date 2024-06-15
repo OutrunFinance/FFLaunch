@@ -88,6 +88,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
 
     /**
      * @dev Deposit temporary fund
+     * @param usdbValue - USDB value to deposit
      */
     function depositToTempFundPool(uint256 usdbValue) external {
         address msgSender = msg.sender;
@@ -111,6 +112,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
 
     /**
      * @dev Claim token or refund after claimDeadline
+     * @param poolId - LaunchPool id
      */
     function claimTokenOrFund(uint256 poolId) external override {
         address msgSender = msg.sender;
@@ -169,6 +171,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
 
     /**
      * @dev Enable transfer about token of pool
+     * @param poolId - LaunchPool id
      */
     function enablePoolTokenTransfer(uint256 poolId) external override {
         LaunchPool storage pool = _launchPools[poolId];
@@ -180,6 +183,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
 
     /**
      * @dev Claim your liquidity by pooId when liquidity unlocked
+     * @param poolId - LaunchPool id
      */
     function claimPoolLiquidity(uint256 poolId) external override {
         address msgSender = msg.sender;
@@ -200,7 +204,8 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
 
     /**
      * @dev Claim transaction fees of liquidity pool
-     * @param receiver Address to receive transaction fees
+     * @param poolId - LaunchPool id
+     * @param receiver - Address to receive transaction fees
      */
     function claimTransactionFees(uint256 poolId, address receiver) external override {
         address msgSender = msg.sender;
@@ -217,7 +222,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
 
     /**
      * @dev Generate remaining tokens after FFLaunch event
-     * @param poolId LaunchPool id
+     * @param poolId - LaunchPool id
      * @notice Only generator can call, only can call once
      */
     function generateRemainingTokens(uint256 poolId) external override returns (uint256 remainingTokenAmount) {
@@ -247,7 +252,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
 
     /**
      * @dev register FF launchPool
-     * @param poolParam Pool param
+     * @param poolParam - Pool param
      * @notice The tokenGenerator code should be kept as concise as possible and undergo auditing to prevent malicious behavior.
      */
     function registerPool(LaunchPool calldata poolParam) external override onlyOwner returns (uint256 poolId) {
@@ -290,9 +295,9 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
 
     /**
      * @dev Update timeLockVault address
-     * @param poolId LaunchPool id
-     * @param token Token address
-     * @param timeLockVault TimeLockVault contract address
+     * @param poolId - LaunchPool id
+     * @param token - oken address
+     * @param timeLockVault - TimeLockVault contract address
      * @notice The address can only be updated after the TimeLockVault contract is reviewed by the Outrun audit team.
      */
     function updateTimeLockVault(uint256 poolId, address token, address timeLockVault) external override onlyOwner {
