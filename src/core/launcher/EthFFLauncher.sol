@@ -97,7 +97,9 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         LaunchPool storage pool = _launchPools[poolId];
         uint256 currentTime = block.timestamp;
         uint128 maxDeposit = pool.maxDeposit;
-        require(currentTime > pool.startTime && currentTime < pool.endTime, "Invalid time");
+        uint64 startTime = pool.startTime;
+        uint64 endTime = pool.endTime;
+        require(currentTime > startTime && currentTime < endTime, "Invalid time");
         require(msgValue <= maxDeposit, "Invalid vaule");
 
         unchecked {
