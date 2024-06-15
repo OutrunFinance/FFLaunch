@@ -89,7 +89,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
     /**
      * @dev Deposit temporary fund
      */
-    function depositToTempFundPool(uint256 value) external {
+    function depositToTempFundPool(uint256 usdbValue) external {
         address msgSender = msg.sender;
         require(msgSender == tx.origin, "Only EOA account");
 
@@ -98,12 +98,12 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
         uint256 currentTime = block.timestamp;
         uint128 maxDeposit = pool.maxDeposit;
         require(currentTime > pool.startTime && currentTime < pool.endTime, "Invalid time");
-        require(value <= maxDeposit, "Invalid vaule");
-        IERC20(USDB).safeTransferFrom(msgSender, address(this), value);
+        require(usdbValue <= maxDeposit, "Invalid vaule");
+        IERC20(USDB).safeTransferFrom(msgSender, address(this), usdbValue);
 
         unchecked {
-            _tempFund[poolId] += value;
-            _tempFundPool[getBeacon(poolId, msgSender)] += value;
+            _tempFund[poolId] += usdbValue;
+            _tempFundPool[getBeacon(poolId, msgSender)] += usdbValue;
         }
     }
 
