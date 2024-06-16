@@ -16,9 +16,9 @@ contract FFGenerator is ITokenGenerator, Ownable, GasManagerable, Initializable 
     address public immutable LAUNCHER;
 
     uint256 public constant AMOUNT_PER_MINT_0 = 6000;
-    uint256 public constant AMOUNT_PER_MINT_1 = 4500;
-    uint256 public constant AMOUNT_PER_MINT_2 = 3000;
-    uint256 public constant AMOUNT_BASED_ETH = 4500;
+    uint256 public constant AMOUNT_PER_MINT_1 = 5000;
+    uint256 public constant AMOUNT_PER_MINT_2 = 4000;
+    uint256 public constant AMOUNT_BASED_ETH = 5000;
 
     address private _token;
     uint256 private _checkPoint0;       // Time check point 0
