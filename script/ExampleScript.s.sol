@@ -10,7 +10,7 @@ contract ExampleScript is BaseScript {
 
     function run() public broadcaster {
         address owner = vm.envAddress("OWNER");
-        address launcher = vm.envAddress("LAUNCHER");
+        address launcher = vm.envAddress("ETH_FFLAUNCHER");
         address gasManager = vm.envAddress("GAS_MANAGER");
 
         uint256 currentTime = block.timestamp;
