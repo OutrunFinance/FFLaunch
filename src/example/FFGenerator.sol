@@ -21,8 +21,8 @@ contract FFGenerator is ITokenGenerator, Ownable, GasManagerable, Initializable 
     uint256 public constant AMOUNT_BASED_ETH = 4500;
 
     address private _token;
-    uint256 private _checkPoint0;
-    uint256 private _checkPoint1;
+    uint256 private _checkPoint0;       // Time check point 0
+    uint256 private _checkPoint1;       // Time check point 1
 
     modifier onlyLauncher() {
         require(msg.sender == LAUNCHER, "Only launcher");
