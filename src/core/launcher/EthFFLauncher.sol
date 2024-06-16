@@ -127,16 +127,16 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         uint256 currentTime = block.timestamp;
         if (currentTime < claimDeadline) {
             IORETH(ORETH).deposit{value: fund}();
-            (uint256 amountInOSETH,) =
-                IORETHStakeManager(orETHStakeManager).stake(fund, lockupDays, msgSender, address(this), msgSender);
+            (uint256 amountInOSETH,) = IORETHStakeManager(orETHStakeManager).stake(fund, lockupDays, msgSender, address(this), msgSender);
 
             // Calling the registered tokenGenerator contract to get liquidity token and mint token to user
             address generator = pool.generator;
             uint256 investorTokenAmount = ITokenGenerator(generator).generateInvestorToken(amountInOSETH, msgSender);
             uint256 liquidityTokenAmount = ITokenGenerator(generator).generateLiquidityToken(amountInOSETH);
             address token = pool.token;
-            IERC20(token).approve(outswapV1Router, liquidityTokenAmount);
-            (,, uint256 liquidity) = IOutswapV1Router(outswapV1Router).addLiquidity(
+            address router = outswapV1Router;
+            IERC20(token).approve(router, liquidityTokenAmount);
+            (,, uint256 liquidity) = IOutswapV1Router(router).addLiquidity(
                 OSETH,
                 token,
                 amountInOSETH,
@@ -211,11 +211,13 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         require(msgSender == pool.generator, "Permission denied");
         require(block.timestamp > pool.claimDeadline, "After claimDeadline");
 
-        address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSETH);
-        uint256 feeLp = IOutswapV1Pair(pair).claimMakerFee();
-        IERC20(pair).safeTransfer(receiver, feeLp);
+        address pairAddress = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSETH);
+        IOutswapV1Pair pair = IOutswapV1Pair(pairAddress);
+        (uint256 amount0, uint256 amount1) = pair.claimMakerFee();
+        IERC20(pair.token0()).safeTransfer(receiver, amount0);
+        IERC20(pair.token1()).safeTransfer(receiver, amount1);
 
-        emit ClaimTransactionFees(poolId, receiver, feeLp);
+        emit ClaimTransactionFees(poolId, receiver, amount0, amount1);
     }
 
     /**

@@ -52,7 +52,7 @@ interface IFFLauncher {
 
     event ClaimPoolLiquidity(uint256 indexed poolId, address indexed account, uint256 lpAmount);
 
-    event ClaimTransactionFees(uint256 indexed poolId, address to, uint256 feeLp);
+    event ClaimTransactionFees(uint256 indexed poolId, address to, uint256 amount0, uint256 amount1);
 
     event GenerateRemainingTokens(uint256 indexed poolId, address token, address timeLockVault, uint256 remainingTokenAmount);
 
