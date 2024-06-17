@@ -98,7 +98,7 @@ Through meme-based operations, FFLaunch project teams can significantly enhance 
 
 + **Fair Fundraising:** By providing liquidity and a lock-up mechanism, project teams can ensure that the funds raised are more equitable and transparent.
 
-+ **Continuous Cash Flow:** Project teams can receive ongoing funding support from transaction fees generated during the LP lock-up period, incentivizing them to continuously improve and maintain the project.
++ **Continuous Cash Flow:** The project team can receive continuous financial support from transaction fees generated during the liquidity lock period, incentivizing them to continually improve and maintain the project.
 
 + **Enhanced Market Liquidity:** Since tokens are obtained for free, more users are attracted to participate, increasing the depth of the liquidity pool and enhancing market liquidity.
 
@@ -106,7 +106,7 @@ Through meme-based operations, FFLaunch project teams can significantly enhance 
 
 + **Flexibility and Innovation:** Project teams can use ITokenGenerator interface (subject to review) to customize their launch logic, meeting specific needs and enhancing the project's uniqueness and appeal.
 
-+ **User Stickiness:** Since investors passively hold tokens, even if they sell all their tokens, the LP remains locked. This ensures that users are passively following their invested project, providing potential exposure opportunities for the project.
++ **User Stickiness:** Since investors hold shares of the liquidity locked during the FFLaunch genesis period, each genesis user is considered a shareholder during the liquidity lock period. This ensures that users continuously monitor their investments and potentially provide exposure opportunities for the project, significantly reducing operational obstacles for the project's cold start.
 
 + **Meme-Based Operations:** Given the meme attributes of FFLaunch tokens, project teams can engage with and communicate with users in unique ways through meme-based operations.
 
