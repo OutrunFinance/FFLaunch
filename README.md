@@ -104,7 +104,7 @@ Through meme-based operations, FFLaunch project teams can significantly enhance 
 
 + **Market Attention:** FFLaunch offers an innovative issuance model that can attract more market attention, especially from investors who are skeptical of traditional ICO/IDO models.
 
-+ **Flexibility and Innovation:** Project teams can use FFLaunch's callee interface (subject to review) to customize their launch logic, meeting specific needs and enhancing the project's uniqueness and appeal.
++ **Flexibility and Innovation:** Project teams can use ITokenGenerator interface (subject to review) to customize their launch logic, meeting specific needs and enhancing the project's uniqueness and appeal.
 
 + **User Stickiness:** Since investors passively hold tokens, even if they sell all their tokens, the LP remains locked. This ensures that users are passively following their invested project, providing potential exposure opportunities for the project.
 
