@@ -173,7 +173,7 @@ In the lifecycle of the FFLaunch event, there are a total of 3 entities and 6 st
 
 **3. Deposit Stage**
 
-+ During the block time between the registered LaunchPool's startTime and endTime, investors can deposit funds into the temporary fund pool of that LaunchPool using the FFLauncher contract's depositToTempFundPool method. It is important to note that the Deposit stage overlaps partially with the Claim stage in terms of time.
++ During the block time between the registered LaunchPool's startTime and endTime, investors can repeatedly call the depositToTempFundPool method of the FFLauncher contract to deposit into the temporary liquidity pool of that LaunchPool.
 
 + During the Deposit stage, investors can deposit into the temporary liquidity pool and then call the claimTokenOrFund method of the FFLauncher contract. This allows them to stake their deposit in the temporary liquidity pool into Outstake to obtain liquidity staking tokens and YieldToken. Simultaneously, they can generate the corresponding number of tokens by invoking the TokenGenerator contract registered by the project team. A portion of the tokens will be added to the liquidity with the user's funds on Outswap, and the LP will be locked in the FFLauncher contract. The remaining tokens will be sent directly to the user.
 
