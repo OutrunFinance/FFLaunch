@@ -185,7 +185,7 @@ FFLaunch 通过质押 ETH 和 USDB 来提高 Outstake 的 TVL，增强 osETH 和
 
 **4. 开放交易阶段**
 
-+ Deposit 阶段结束后，任何人都可以 FFLauncher 的 enablePoolTokenTransfer 方法打开交易开关，此时 Token 可以自由交易。
++ Deposit 阶段结束后，任何人都可以调用 FFLauncher 的 enablePoolTokenTransfer 方法打开交易开关，此时 Token 可以自由交易。
 
 + 在这个阶段期间，锁定在 FFLauncher 合约中的 LP 所产生的做市收益归项目团队所有，即项目团队募集到的持续现金流。
 
