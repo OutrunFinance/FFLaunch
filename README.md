@@ -181,7 +181,7 @@ In the lifecycle of the FFLaunch event, there are a total of 3 entities and 6 st
 
 **4. Open Trading Stage**
 
-+ Following the conclusion of the Claim stage, anyone can use the FFLauncher contract's enablePoolTokenTransfer method to enable token trading. Tokens can now be freely traded.
++ Following the conclusion of the deposit stage, anyone can call the FFLauncher contract's enablePoolTokenTransfer method to enable token trading. Tokens can now be freely traded.
 
 + During this stage, the liquidity provider (LP) earnings locked in the FFLauncher contract accrue to the project team, providing continuous cash flow from the funds raised.
 
