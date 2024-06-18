@@ -183,17 +183,17 @@ FFLaunch 通过质押 ETH 和 USDB 来提高 Outstake 的 TVL，增强 osETH 和
 
 + 当区块时间在已注册的 LaunchPool 的 endTime 之后时，此时已经是开放交易阶段，用户无法再 Claim 项目团队的 Token，而是会执行 Refund 操作，将自己在临时资金池中的剩余资金取出来。
 
-**4. 开放交易阶段**
+**4. 流动性锁定阶段**
 
 + Deposit 阶段结束后，任何人都可以调用 FFLauncher 的 enablePoolTokenTransfer 方法打开交易开关，此时 Token 可以自由交易。
 
 + 在这个阶段期间，锁定在 FFLauncher 合约中的 LP 所产生的做市收益归项目团队所有，即项目团队募集到的持续现金流。
 
-**5. LP 解锁阶段**
+**5. 流动性解锁阶段**
 
-+ 当 LP 锁定时间到期后，用户可以调用 FFLauncher 合约的 claimPoolLiquidity 方法，将自己在 Claim 阶段锁定的 LP 提取出来。
++ 当流动性锁定时间到期后，用户可以调用 FFLauncher 合约的 claimPoolLiquidity 方法，将自己在 Deposit 阶段锁定的 LP 提取出来。
 
-+ 项目团队不再获取LP的做市收益。
++ 项目团队不再获取流动性的做市收益。
 
 **6. 剩余代币生成阶段**
 

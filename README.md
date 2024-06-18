@@ -84,6 +84,7 @@ Through meme-based operations, FFLaunch project teams can significantly enhance 
 ## Benefits for Participants
 
 ### As an Investor Participating in FFLaunch
+
 + **Free Tokens:** Investors can mint tokens by staking ETH or USDB, without needing to purchase tokens directly, making the acquisition cost extremely low, effectively getting tokens for free.
 
 + **Low-Risk Returns:** Investors' staked funds can be redeemed after the lock-up period, meaning that even if the project fails, investors can reclaim most of their initial investment, achieving very low-risk returns.
@@ -175,21 +176,21 @@ In the lifecycle of the FFLaunch event, there are a total of 3 entities and 6 st
 
 + During the block time between the registered LaunchPool's startTime and endTime, investors can repeatedly call the depositToTempFundPool method of the FFLauncher contract to deposit into the temporary liquidity pool of that LaunchPool.
 
-+ During the Deposit stage, investors can deposit into the temporary liquidity pool and then call the claimTokenOrFund method of the FFLauncher contract. This allows them to stake their deposit in the temporary liquidity pool into Outstake to obtain liquidity staking tokens and YieldToken. Simultaneously, they can generate the corresponding number of tokens by invoking the TokenGenerator contract registered by the project team. A portion of the tokens will be added to the liquidity with the user's funds on Outswap, and the LP will be locked in the FFLauncher contract. The remaining tokens will be sent directly to the user.
++ During the Deposit stage, investors can deposit into the temporary liquidity pool and then call the claimTokenOrFund method of the FFLauncher contract. This allows them to stake their deposit in the temporary liquidity pool into Outstake to obtain liquidity staking tokens and YieldToken. Simultaneously, they can generate the corresponding number of tokens by invoking the TokenGenerator contract registered by the project team. A portion of the tokens will be added to the liquidity with the investor's funds on Outswap, and the LP will be locked in the FFLauncher contract. The remaining tokens will be sent directly to the investors.
 
 + After the block time reaches the endTime of the registered LaunchPool, the stage transitions to the Open Trading stage. Investors can no longer claim tokens from the project team but can execute refund operations to withdraw their remaining funds from the temporary fund pool.
 
-**4. Open Trading Stage**
+**4. Liquidity  Lock Stage**
 
 + Following the conclusion of the deposit stage, anyone can call the FFLauncher contract's enablePoolTokenTransfer method to enable token trading. Tokens can now be freely traded.
 
 + During this stage, the liquidity provider (LP) earnings locked in the FFLauncher contract accrue to the project team, providing continuous cash flow from the funds raised.
 
-**5. LP Unlock Stage**
+**5. Liquidity Unlock Stage**
 
-+ Upon the expiration of the LP lock period, investors can use the FFLauncher contract's claimPoolLiquidity method to withdraw their LP tokens that were locked during the Claim stage.
++ Upon the expiration of the liquidity lock period, investors can use the FFLauncher contract's claimPoolLiquidity method to withdraw their LP tokens that were locked during the Deposit stage.
 
-+ The project team no longer receives LP earnings from this point onward.
++ The project team no longer receives liquidity market maker fee from this point onward.
 
 **6. Remaining Token Generation Stage**
 
