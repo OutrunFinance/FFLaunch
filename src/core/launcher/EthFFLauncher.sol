@@ -109,7 +109,7 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
     }
 
     /**
-     * @dev Claim token or refund after claimDeadline
+     * @dev Claim token or refund after endTime
      * @param poolId - LaunchPool id
      */
     function claimTokenOrFund(uint256 poolId) external override {
@@ -122,10 +122,10 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         _tempFund[poolId] -= fund;
         _tempFundPool[beacon] = 0;
 
-        uint128 claimDeadline = pool.claimDeadline;
-        uint128 lockupDays = pool.lockupDays;
+        uint64 endTime = pool.endTime;
+        uint256 lockupDays = pool.lockupDays;
         uint256 currentTime = block.timestamp;
-        if (currentTime < claimDeadline) {
+        if (currentTime < endTime) {
             IORETH(ORETH).deposit{value: fund}();
             (uint256 amountInOSETH,) = IORETHStakeManager(orETHStakeManager).stake(fund, lockupDays, msgSender, address(this), msgSender);
 
@@ -174,7 +174,7 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
     function enablePoolTokenTransfer(uint256 poolId) external override {
         LaunchPool storage pool = _launchPools[poolId];
         address token = pool.token;
-        require(block.timestamp >= pool.claimDeadline, "Pool not closed");
+        require(block.timestamp >= pool.endTime, "Pool not closed");
         require(!IFFT(token).transferable(), "Already enable transfer");
         IFFT(token).enableTransfer();
     }
@@ -190,7 +190,7 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         uint256 fund = _poolFunds[beacon];
         require(fund > 0, "No fund");
         require(!_isPoolLiquidityClaimed[beacon], "Already claimed");
-        require(block.timestamp >= pool.claimDeadline + pool.lockupDays * DAY, "Locked liquidity");
+        require(block.timestamp >= pool.endTime + pool.lockupDays * DAY, "Locked liquidity");
 
         uint256 lpAmount = pool.totalLiquidityLP * fund / pool.totalLiquidityFund;
         address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSETH);
@@ -209,7 +209,7 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         address msgSender = msg.sender;
         LaunchPool storage pool = _launchPools[poolId];
         require(msgSender == pool.generator, "Permission denied");
-        require(block.timestamp > pool.claimDeadline, "After claimDeadline");
+        require(block.timestamp > pool.endTime, "After end time");
 
         address pairAddress = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSETH);
         IOutswapV1Pair pair = IOutswapV1Pair(pairAddress);
@@ -232,7 +232,7 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         require(!pool.areAllGenerated, "Already generated");
         address msgSender = msg.sender;
         require(msgSender == pool.generator, "Permission denied");
-        require(block.timestamp >= pool.claimDeadline + (pool.lockupDays + 7) * DAY, "Time not reached");
+        require(block.timestamp >= pool.endTime + (pool.lockupDays + 7) * DAY, "Time not reached");
 
         pool.areAllGenerated = true;
         uint256 totalSupply = pool.totalSupply;
@@ -268,20 +268,19 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
 
         uint256 currentPoolId = id;
         if (currentPoolId != 0) {
-            require(currentTime > _launchPools[currentPoolId].claimDeadline, "Last pool ongoing");
+            require(currentTime > _launchPools[currentPoolId].endTime, "Last pool ongoing");
         }
 
         LaunchPool memory pool = LaunchPool(
             token,
             generator,
             poolParam.timeLockVault,
-            poolParam.claimDeadline,
-            poolParam.lockupDays,
             0,
             0,
             poolParam.maxDeposit,
             startTime,
             endTime,
+            poolParam.lockupDays,
             poolParam.totalSupply,
             poolParam.sharePercent,
             poolParam.mintedAmount,
@@ -303,7 +302,7 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
     function updateTimeLockVault(uint256 poolId, address token, address timeLockVault) external override onlyOwner {
         LaunchPool storage pool = _launchPools[poolId];
         require(pool.token == token, "Token mismatch");
-        require(block.timestamp <= pool.claimDeadline + pool.lockupDays * DAY, "Time exceeded");
+        require(block.timestamp <= pool.endTime + pool.lockupDays * DAY, "Time exceeded");
         pool.timeLockVault = timeLockVault;
 
         emit UpdateTimeLockVault(poolId, timeLockVault);

@@ -147,7 +147,7 @@ FFLaunch 通过质押 ETH 和 USDB 来提高 Outstake 的 TVL，增强 osETH 和
 
 ## 事件生命周期
 
-在 FFLaunch 事件的生命周期中一共有 3 个实体，7 个阶段。
+在 FFLaunch 事件的生命周期中一共有 3 个实体，6 个阶段。
 
 ### 实体
 
@@ -177,27 +177,25 @@ FFLaunch 通过质押 ETH 和 USDB 来提高 Outstake 的 TVL，增强 osETH 和
 
 **3. Deposit 阶段**
 
-+ 当区块时间在已注册的 LaunchPool 的 startTime 与 endTime 之间时，投资者可以调用 FFLauncher 合约的 depositToTempFundPool 方法，向该 LaunchPool 的临时资金池存款。需要注意的是 Deposit 阶段和 Claim 阶段的部分时间是重合的。
++ 当区块时间在已注册的 LaunchPool 的 startTime 与 endTime 之间时，投资者可以多次调用 FFLauncher 合约的 depositToTempFundPool 方法，向该 LaunchPool 的临时资金池存款。
 
-**4. Claim 阶段**
++ 在 Deposit 阶段，投资者可以在向临时资金池存款后，继续调用 FFLauncher 合约的 claimTokenOrFund 方法，将自己在临时资金池中的存款质押到 Outstake 中以获取流动性质押代币与 YieldToken, 同调用项目团队注册的 TokenGenerator 合约生成对应数量的 Token，一部分 Token 会与用户的资金在 Outswap 上添加流动性，LP将会锁定在 FFLauncher 合约中，另一部分 Token 会直接发送给用户。
 
-+ 当区块时间在已注册的 LaunchPool 的 claimDeadline 之前时，投资者可以调用 FFLauncher 合约的 claimTokenOrFund 方法，将自己在临时资金池中的存款质押到 Outstake 中以获取流动性质押代币与 YieldToken, 同调用项目团队注册的 TokenGenerator 合约生成对应数量的 Token，一部分 Token 会与用户的资金在 Outswap 上添加流动性，LP将会锁定在 FFLauncher 合约中，另一部分 Token 会直接发送给用户。
++ 当区块时间在已注册的 LaunchPool 的 endTime 之后时，此时已经是开放交易阶段，用户无法再 Claim 项目团队的 Token，而是会执行 Refund 操作，将自己在临时资金池中的资金取出来。
 
-+ 当区块时间在已注册的 LaunchPool 的 claimDeadline 之后时，此时已经是开放交易阶段，用户无法再 Claim 项目团队的 Token，而是会执行 Refund 操作，将自己在临时资金池中的资金取出来。
+**4. 开放交易阶段**
 
-**5. 开放交易阶段**
-
-+ Claim 阶段结束后，任何人都可以 FFLauncher 的 enablePoolTokenTransfer 方法打开交易开关，此时 Token 可以自由交易。
++ Deposit 阶段结束后，任何人都可以 FFLauncher 的 enablePoolTokenTransfer 方法打开交易开关，此时 Token 可以自由交易。
 
 + 在这个阶段期间，锁定在 FFLauncher 合约中的 LP 所产生的做市收益归项目团队所有，即项目团队募集到的持续现金流。
 
-**6. LP 解锁阶段**
+**5. LP 解锁阶段**
 
 + 当 LP 锁定时间到期后，用户可以调用 FFLauncher 合约的 claimPoolLiquidity 方法，将自己在 Claim 阶段锁定的 LP 提取出来。
 
 + 项目团队不再获取LP的做市收益。
 
-**7. 剩余代币生成阶段**
+**6. 剩余代币生成阶段**
 
 + 在 LP 解锁阶段持续 7 天之后进入此阶段，此时项目团队可以调用 FFLauncher 合约的 generateRemainingTokens 方法向 TimeLockVault 合约铸造剩余代币。
 

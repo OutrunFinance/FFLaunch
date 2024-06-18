@@ -143,7 +143,7 @@ Many Liquidity Staking Tokens (LSTs) face limitations in their usage scenarios, 
 
 ## Event Lifecycle
 
-In the lifecycle of the FFLaunch event, there are a total of 3 entities and 7 stages:
+In the lifecycle of the FFLaunch event, there are a total of 3 entities and 6 stages:
 
 ### Entities
 
@@ -175,25 +175,23 @@ In the lifecycle of the FFLaunch event, there are a total of 3 entities and 7 st
 
 + During the block time between the registered LaunchPool's startTime and endTime, investors can deposit funds into the temporary fund pool of that LaunchPool using the FFLauncher contract's depositToTempFundPool method. It is important to note that the Deposit stage overlaps partially with the Claim stage in terms of time.
 
-**4. Claim Stage**
++ During the Deposit stage, investors can deposit into the temporary liquidity pool and then call the claimTokenOrFund method of the FFLauncher contract. This allows them to stake their deposit in the temporary liquidity pool into Outstake to obtain liquidity staking tokens and YieldToken. Simultaneously, they can generate the corresponding number of tokens by invoking the TokenGenerator contract registered by the project team. A portion of the tokens will be added to the liquidity with the user's funds on Outswap, and the LP will be locked in the FFLauncher contract. The remaining tokens will be sent directly to the user.
 
-+ Before the block time reaches the claimDeadline of the registered LaunchPool, investors can use the FFLauncher contract's claimTokenOrFund method to stake their deposits from the temporary fund pool into Outstake to receive liquidity staking tokens and YieldToken. Simultaneously, the TokenGenerator contract registered by the project team generates a corresponding amount of tokens. Part of these tokens are used to provide liquidity on Outswap with the investor's funds, while the LP is locked in the FFLauncher contract. Another part of the tokens is directly distributed to the investor.
++ After the block time reaches the endTime of the registered LaunchPool, the stage transitions to the Open Trading stage. Investors can no longer claim tokens from the project team but can execute refund operations to withdraw their funds from the temporary fund pool.
 
-+ After the block time reaches the claimDeadline of the registered LaunchPool, the stage transitions to the Open Trading stage. Investors can no longer claim tokens from the project team but can execute refund operations to withdraw their funds from the temporary fund pool.
-
-**5. Open Trading Stage**
+**4. Open Trading Stage**
 
 + Following the conclusion of the Claim stage, anyone can use the FFLauncher contract's enablePoolTokenTransfer method to enable token trading. Tokens can now be freely traded.
 
 + During this stage, the liquidity provider (LP) earnings locked in the FFLauncher contract accrue to the project team, providing continuous cash flow from the funds raised.
 
-**6. LP Unlock Stage**
+**5. LP Unlock Stage**
 
 + Upon the expiration of the LP lock period, investors can use the FFLauncher contract's claimPoolLiquidity method to withdraw their LP tokens that were locked during the Claim stage.
 
 + The project team no longer receives LP earnings from this point onward.
 
-**7. Remaining Token Generation Stage**
+**6. Remaining Token Generation Stage**
 
 + This stage begins 7 days after entering the LP Unlock stage. During this phase, the project team can use the FFLauncher contract's generateRemainingTokens method to mint remaining tokens into the TimeLockVault contract.
 

@@ -9,13 +9,12 @@ interface IFFLauncher {
         address token;                  // Token address
         address generator;              // Token generator address
         address timeLockVault;          // Remaining tokens time lock vault
-        uint128 claimDeadline;          // Deadline of claim token
-        uint128 lockupDays;             // LockupDay of liquidity
         uint128 totalLiquidityFund;     // Funds(osETH|osUSD) actually added to the liquidity pool.
         uint128 totalLiquidityLP;       // Total liquidity of LP
         uint128 maxDeposit;             // The maximum amount of funds that can be deposited each time.
         uint64 startTime;               // StartTime of launchPool
         uint64 endTime;                 // EndTime of launchPool
+        uint256 lockupDays;             // LockupDay of liquidity
         uint256 totalSupply;            // Token totalSupply, if 0, indicates unlimited mintable tokens.
         uint256 sharePercent;           // Percentage of totalSupply that can be minted by LaunchPool, if 100%, indicates can't generate remaining tokens.
         uint256 mintedAmount;           // Amount of minted tokens by LaunchPool, including tokens in the liquidity pool.
