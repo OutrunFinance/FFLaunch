@@ -253,7 +253,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
     }
 
     /**
-     * @dev register FF launchPool
+     * @dev Register FF launchPool
      * @param poolParam - Pool param
      * @notice The tokenGenerator code should be kept as concise as possible and undergo auditing to prevent malicious behavior.
      */
