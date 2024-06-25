@@ -179,7 +179,7 @@ FFLaunch 通过质押 ETH 和 USDB 来提高 Outstake 的 TVL，增强 osETH 和
 
 + 当区块时间在已注册的 LaunchPool 的 startTime 与 endTime 之间时，投资者可以多次调用 FFLauncher 合约的 depositToTempFundPool 方法，向该 LaunchPool 的临时资金池存款。
 
-+ 在 Deposit 阶段，投资者可以在向临时资金池存款后，继续调用 FFLauncher 合约的 claimTokenOrFund 方法，将自己在临时资金池中的存款质押到 Outstake 中以获取流动性质押代币与 YieldToken, 同时调用项目团队注册的 TokenGenerator 合约生成对应数量的 Token，一部分 Token 会与用户的资金在 Outswap 上添加流动性，LP将会锁定在 FFLauncher 合约中，另一部分 Token 会直接发送给用户。
++ 在 Deposit 阶段，投资者可以在向临时资金池存款后，继续调用 FFLauncher 合约的 claimTokenOrFund 方法，将自己在临时资金池中的存款质押到 Outstake 中以获取流动性质押代币与 YieldToken, 同时调用项目团队注册的 TokenGenerator 合约生成对应数量的 Token，一部分 Token 会与用户的资金在 Outswap 上添加流动性，LP将会锁定在 FFLauncher 合约中，另一部分 Token 会直接发送给用户。与此同时，还会铸造 LiquidityERC20 代币作为用户添加的流动性的证明代币，该代币也可以自由交易。
 
 + 当区块时间在已注册的 LaunchPool 的 endTime 之后时，此时已经是开放交易阶段，用户无法再 Claim 项目团队的 Token，而是会执行 Refund 操作，将自己在临时资金池中的剩余资金取出来。
 
@@ -191,7 +191,7 @@ FFLaunch 通过质押 ETH 和 USDB 来提高 Outstake 的 TVL，增强 osETH 和
 
 **5. 流动性解锁阶段**
 
-+ 当流动性锁定时间到期后，用户可以调用 FFLauncher 合约的 claimPoolLiquidity 方法，将自己在 Deposit 阶段锁定的 LP 提取出来。
++ 当流动性锁定时间到期后，用户可以调用 FFLauncher 合约的 claimPoolLiquidity 方法燃烧 LiquidityERC20 代币，将锁定的 LP 提取出来。
 
 + 项目团队不再获取流动性的做市收益。
 
