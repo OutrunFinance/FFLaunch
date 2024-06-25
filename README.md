@@ -93,7 +93,7 @@ Through meme-based operations, FFLaunch project teams can significantly enhance 
 
 + **Rug Pull Prevention:** The FFLaunch model prevents project teams from absconding with raised funds, ensuring fairer token distribution and protecting investors' rights.
 
-+ **Diamond Hand HODL:** Due to the long-term lock-up of staked funds, investors are passively holding tokens, benefiting from various advantages during the project's growth cycle.
++ **Tradeable Liquidity Proof:** Investors mint tradeable liquidity proof tokens when they lock liquidity. They can trade these tokens at any time, thereby managing their risk while their liquidity remains locked.
 
 ### As a Project Team Participating in FFLaunch
 
