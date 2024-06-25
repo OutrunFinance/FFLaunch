@@ -8,9 +8,9 @@ interface IFFLauncher {
     struct LaunchPool {
         address token;                  // Token address
         address generator;              // Token generator address
+        address liquidityERC20;         // LiquidityERC20 address
         address timeLockVault;          // Remaining tokens time lock vault
-        uint128 totalLiquidityFund;     // Funds(osETH|osUSD) actually added to the liquidity pool.
-        uint128 totalLiquidityLP;       // Total liquidity of LP
+        uint256 totalLiquidityFund;     // Funds(osETH|osUSD) actually added to the liquidity pool.
         uint128 maxDeposit;             // The maximum amount of funds that can be deposited each time.
         uint64 startTime;               // StartTime of launchPool
         uint64 endTime;                 // EndTime of launchPool
@@ -27,18 +27,12 @@ interface IFFLauncher {
 
     function tempFundPool(uint256 poolId, address account) external view returns (uint256);
 
-    function poolFunds(uint256 poolId, address account) external view returns (uint256);
-
-    function isPoolLiquidityClaimed(uint256 poolId, address account) external view returns (bool);
-
-    function viewPoolLiquidity(uint256 poolId) external view returns (uint256);
-
 
     function claimTokenOrFund(uint256 poolId) external;
 
     function enablePoolTokenTransfer(uint256 poolId) external;
 
-    function claimPoolLiquidity(uint256 poolId) external;
+    function claimPoolLiquidity(uint256 poolId, uint256 burnedLiquidity) external;
 
     function claimTransactionFees(uint256 poolId, address receiver) external;
 

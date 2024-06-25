@@ -14,7 +14,9 @@ import "../utils/IOutswapV1Router.sol";
 import "../utils/IOutswapV1Pair.sol";
 import "../utils/IORETHStakeManager.sol";
 import "../generator/ITokenGenerator.sol";
+import "../token/FFLiquidityERC20.sol";
 import "../token/interfaces/IFFT.sol";
+import "../token/interfaces/IFFLiquidityERC20.sol";
 import "../../blast/GasManagerable.sol";
 
 /**
@@ -34,8 +36,6 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
     mapping(uint256 poolId => LaunchPool) private _launchPools;
     mapping(uint256 poolId => uint256) private _tempFund;
     mapping(bytes32 beacon => uint256) private _tempFundPool;
-    mapping(bytes32 beacon => uint256) private _poolFunds;
-    mapping(bytes32 beacon => bool) private _isPoolLiquidityClaimed;
 
     constructor(
         address _owner,
@@ -66,19 +66,6 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
 
     function tempFundPool(uint256 poolId, address account) external view override returns (uint256) {
         return _tempFundPool[getBeacon(poolId, account)];
-    }
-
-    function poolFunds(uint256 poolId, address account) external view override returns (uint256) {
-        return _poolFunds[getBeacon(poolId, account)];
-    }
-
-    function isPoolLiquidityClaimed(uint256 poolId, address account) external view override returns (bool) {
-        return _isPoolLiquidityClaimed[getBeacon(poolId, account)];
-    }
-
-    function viewPoolLiquidity(uint256 poolId) external view override returns (uint256) {
-        LaunchPool storage pool = _launchPools[poolId];
-        return pool.totalLiquidityLP * _poolFunds[getBeacon(poolId, msg.sender)] / pool.totalLiquidityFund;
     }
 
     function getBeacon(uint256 poolId, address account) internal pure returns (bytes32) {
@@ -146,11 +133,9 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
                 address(this),
                 block.timestamp + 600
             );
-
+            IFFLiquidityERC20(pool.liquidityERC20).mint(msgSender, liquidity);
             unchecked {
-                pool.totalLiquidityLP += uint128(liquidity);
-                pool.totalLiquidityFund += uint128(amountInOSETH);
-                _poolFunds[beacon] += amountInOSETH;
+                pool.totalLiquidityFund += amountInOSETH;
 
                 uint256 mintedAmount = pool.mintedAmount + liquidityTokenAmount + investorTokenAmount;
                 uint256 totalSupply = pool.totalSupply;
@@ -182,22 +167,18 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
     /**
      * @dev Claim your liquidity by pooId when liquidity unlocked
      * @param poolId - LaunchPool id
+     * @param burnedLiquidity - Burned liquidityERC20
      */
-    function claimPoolLiquidity(uint256 poolId) external override {
+    function claimPoolLiquidity(uint256 poolId, uint256 burnedLiquidity) external override {
         address msgSender = msg.sender;
         LaunchPool storage pool = _launchPools[poolId];
-        bytes32 beacon = getBeacon(poolId, msgSender);
-        uint256 fund = _poolFunds[beacon];
-        require(fund > 0, "No fund");
-        require(!_isPoolLiquidityClaimed[beacon], "Already claimed");
         require(block.timestamp >= pool.endTime + pool.lockupDays * DAY, "Locked liquidity");
+        IFFLiquidityERC20(pool.liquidityERC20).burn(msgSender, burnedLiquidity);
 
-        uint256 lpAmount = pool.totalLiquidityLP * fund / pool.totalLiquidityFund;
         address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSETH);
-        _isPoolLiquidityClaimed[beacon] = true;
-        IERC20(pair).safeTransfer(msgSender, lpAmount);
+        IERC20(pair).safeTransfer(msgSender, burnedLiquidity);
 
-        emit ClaimPoolLiquidity(poolId, msgSender, lpAmount);
+        emit ClaimPoolLiquidity(poolId, msgSender, burnedLiquidity);
     }
 
     /**
@@ -271,11 +252,17 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
             require(currentTime > _launchPools[currentPoolId].endTime, "Last pool ongoing");
         }
 
+        FFLiquidityERC20 liquidityERC20 = new FFLiquidityERC20(
+            string(abi.encodePacked(IFFT(token).name(), " Liquid")),
+            string(abi.encodePacked(IFFT(token).symbol(), " LIQUID")),
+            address(this), 
+            gasManager()
+        );
         LaunchPool memory pool = LaunchPool(
             token,
             generator,
+            address(liquidityERC20),
             poolParam.timeLockVault,
-            0,
             0,
             poolParam.maxDeposit,
             startTime,
