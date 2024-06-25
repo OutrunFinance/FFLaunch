@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 /**
- * @dev Custom token generator
+ * @dev Custom Token Generator
  */
 interface ITokenGenerator {
     /**
