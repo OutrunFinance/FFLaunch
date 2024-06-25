@@ -57,7 +57,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
         IERC20(OSUSD).approve(_outswapV1Router, type(uint256).max);
     }
 
-    function launchPool(uint256 poolId) external view override returns (LaunchPool memory) {
+    function launchPools(uint256 poolId) external view override returns (LaunchPool memory) {
         return _launchPools[poolId];
     }
 
@@ -241,9 +241,21 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
     function registerPool(LaunchPool calldata poolParam) external override onlyOwner returns (uint256 poolId) {
         uint256 currentTime = block.timestamp;
         address token = poolParam.token;
+        address timeLockVault = poolParam.timeLockVault;
         uint64 startTime = poolParam.startTime;
         uint64 endTime = poolParam.endTime;
-        require(token != address(0) && startTime > currentTime && endTime > currentTime, "Invalid poolInfo");
+        uint128 maxDeposit = poolParam.maxDeposit;
+        uint256 sharePercent = poolParam.sharePercent;
+        require(
+            token != address(0) && 
+            timeLockVault != address(0) &&
+            startTime > currentTime && 
+            endTime > currentTime && 
+            maxDeposit > 0 && 
+            sharePercent > 0 && 
+            sharePercent <= RATIO, 
+            "Invalid poolInfo"
+        );
 
         address generator = poolParam.generator;
         ITokenGenerator tokenGenerator = ITokenGenerator(generator);
@@ -264,15 +276,15 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
             token,
             generator,
             address(liquidityERC20),
-            poolParam.timeLockVault,
+            timeLockVault,
             0,
-            poolParam.maxDeposit,
+            maxDeposit,
             startTime,
             endTime,
             poolParam.lockupDays,
             poolParam.totalSupply,
-            poolParam.sharePercent,
-            poolParam.mintedAmount,
+            sharePercent,
+            0,
             false
         );
         poolId = nextId();

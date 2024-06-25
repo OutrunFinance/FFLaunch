@@ -21,7 +21,7 @@ interface IFFLauncher {
         bool areAllGenerated;           // Are all tokens generated?
     }
 
-    function launchPool(uint256 poolId) external view returns (LaunchPool memory);
+    function launchPools(uint256 poolId) external view returns (LaunchPool memory);
 
     function tempFund(uint256 poolId) external view returns (uint256);
 
