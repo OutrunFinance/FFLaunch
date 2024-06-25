@@ -83,8 +83,8 @@ abstract contract FFT is IFFT, GasManagerable {
         _isTransferable = true;
     }
 
-    function mint(address _account, uint256 _amount) external override onlyGenerator {
-        _mint(_account, _amount);
+    function mint(address account, uint256 amount) external override onlyGenerator {
+        _mint(account, amount);
     }
 
     function transfer(address to, uint256 value) public override returns (bool) {
