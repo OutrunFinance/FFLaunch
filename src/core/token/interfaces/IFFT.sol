@@ -9,6 +9,10 @@ import "./IERC20Errors.sol";
  * @title FF Token Standard Interface
  */
 interface IFFT is IERC20, IERC20Errors {
+    function name() external view returns (string memory);
+
+    function symbol() external view returns (string memory);
+
     function launcher() external view returns (address);
 
     function generator() external view returns (address);
