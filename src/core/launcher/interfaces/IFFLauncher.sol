@@ -8,7 +8,7 @@ interface IFFLauncher {
     struct LaunchPool {
         address token;                  // Token address
         address generator;              // Token generator address
-        address liquidityERC20;         // LiquidityERC20 address
+        address liquidProof;            // Liquid proof token address
         address timeLockVault;          // Remaining tokens time lock vault
         uint256 totalLiquidityFund;     // Funds(osETH|osUSD) actually added to the liquidity pool.
         uint128 maxDeposit;             // The maximum amount of funds that can be deposited each time.

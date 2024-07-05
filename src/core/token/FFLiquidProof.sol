@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.24;
 
-import "./interfaces/IFFLiquidityERC20.sol";
+import "./interfaces/IFFLiquidProof.sol";
 import "../../blast/GasManagerable.sol";
 
 /**
- * @title FFLaunch Liquidity ERC20 Token Standard
+ * @title FFLaunch Liquid Proof Token
  */
-contract FFLiquidityERC20 is IFFLiquidityERC20, GasManagerable {
+contract FFLiquidProof is IFFLiquidProof, GasManagerable {
     string private _name;
     string private _symbol;
     uint8 private _decimals;

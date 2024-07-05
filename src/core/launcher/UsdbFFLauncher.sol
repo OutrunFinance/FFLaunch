@@ -14,9 +14,9 @@ import "../utils/IOutswapV1Router.sol";
 import "../utils/IOutswapV1Pair.sol";
 import "../utils/IORUSDStakeManager.sol";
 import "../generator/ITokenGenerator.sol";
-import "../token/FFLiquidityERC20.sol";
+import "../token/FFLiquidProof.sol";
 import "../token/interfaces/IFFT.sol";
-import "../token/interfaces/IFFLiquidityERC20.sol";
+import "../token/interfaces/IFFLiquidProof.sol";
 import "../../blast/GasManagerable.sol";
 
 /**
@@ -135,7 +135,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
                 address(this),
                 block.timestamp + 600
             );
-            IFFLiquidityERC20(pool.liquidityERC20).mint(msgSender, liquidity);
+            IFFLiquidProof(pool.liquidProof).mint(msgSender, liquidity);
             unchecked {
                 pool.totalLiquidityFund += amountInOSUSD;
 
@@ -169,18 +169,18 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
     /**
      * @dev Claim your liquidity by pooId when liquidity unlocked
      * @param poolId - LaunchPool id
-     * @param burnedLiquidity - Burned liquidityERC20
+     * @param claimedLiquidity - Claimed liquidity
      */
-    function claimPoolLiquidity(uint256 poolId, uint256 burnedLiquidity) external override {
+    function claimPoolLiquidity(uint256 poolId, uint256 claimedLiquidity) external override {
         address msgSender = msg.sender;
         LaunchPool storage pool = _launchPools[poolId];
         require(block.timestamp >= pool.endTime + pool.lockupDays * DAY, "Locked liquidity");
-        IFFLiquidityERC20(pool.liquidityERC20).burn(msgSender, burnedLiquidity);
+        IFFLiquidProof(pool.liquidProof).burn(msgSender, claimedLiquidity);
 
         address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSUSD);
-        IERC20(pair).safeTransfer(msgSender, burnedLiquidity);
+        IERC20(pair).safeTransfer(msgSender, claimedLiquidity);
 
-        emit ClaimPoolLiquidity(poolId, msgSender, burnedLiquidity);
+        emit ClaimPoolLiquidity(poolId, msgSender, claimedLiquidity);
     }
 
     /**
@@ -266,7 +266,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
             require(currentTime > _launchPools[currentPoolId].endTime, "Last pool ongoing");
         }
 
-        FFLiquidityERC20 liquidityERC20 = new FFLiquidityERC20(
+        FFLiquidProof liquidProof = new FFLiquidProof(
             string(abi.encodePacked(IFFT(token).name(), " Liquid")),
             string(abi.encodePacked(IFFT(token).symbol(), " LIQUID")),
             address(this), 
@@ -275,7 +275,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
         LaunchPool memory pool = LaunchPool(
             token,
             generator,
-            address(liquidityERC20),
+            address(liquidProof),
             timeLockVault,
             0,
             maxDeposit,

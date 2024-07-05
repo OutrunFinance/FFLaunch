@@ -6,9 +6,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./IERC20Errors.sol";
 
 /**
- * @title FFLaunch Liquidity ERC20 Token Interface
+ * @title FFLaunch Liquid Proof Token Interface
  */
-interface IFFLiquidityERC20 is IERC20, IERC20Errors {
+interface IFFLiquidProof is IERC20, IERC20Errors {
     function launcher() external view returns (address);
 
     function mint(address _account, uint256 _amount) external;
