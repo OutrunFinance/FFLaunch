@@ -176,7 +176,7 @@ In the lifecycle of the FFLaunch event, there are a total of 3 entities and 6 st
 
 + During the block time between the registered LaunchPool's startTime and endTime, investors can repeatedly call the depositToTempFundPool method of the FFLauncher contract to deposit into the temporary liquidity pool of that LaunchPool.
 
-+ During the Deposit stage, investors can deposit into the temporary liquidity pool and then call the claimTokenOrFund method of the FFLauncher contract. This allows them to stake their deposit in the temporary liquidity pool into Outstake to obtain liquidity staking tokens and YieldToken. Simultaneously, they can generate the corresponding number of tokens by invoking the TokenGenerator contract registered by the project team. A portion of the tokens will be added to the liquidity with the investor's funds on Outswap, and the LP will be locked in the FFLauncher contract. The remaining tokens will be sent directly to the investors. At the same time, LiquidityERC20 tokens will be minted as proof tokens for the liquidity added by users, and these tokens can also be freely traded.
++ During the Deposit stage, investors can deposit into the temporary liquidity pool and then call the claimTokenOrFund method of the FFLauncher contract. This allows them to stake their deposit in the temporary liquidity pool into Outstake to obtain liquidity staking tokens and YieldToken. Simultaneously, they can generate the corresponding number of tokens by invoking the TokenGenerator contract registered by the project team. A portion of the tokens will be added to the liquidity with the investor's funds on Outswap, and the LP will be locked in the FFLauncher contract. The remaining tokens will be sent directly to the investors. At the same time, LiquidProof tokens will be minted as proof tokens for the liquidity added by users, and these tokens can also be freely traded.
 
 + After the block time reaches the endTime of the registered LaunchPool, the stage transitions to the Open Trading stage. Investors can no longer claim tokens from the project team but can execute refund operations to withdraw their remaining funds from the temporary fund pool.
 
@@ -188,7 +188,7 @@ In the lifecycle of the FFLaunch event, there are a total of 3 entities and 6 st
 
 **5. Liquidity Unlock Stage**
 
-+ After the liquidity lockup period expires, users can call the claimPoolLiquidity method of the FFLauncher contract to burn LiquidityERC20 tokens and withdraw the locked LP tokens.
++ After the liquidity lockup period expires, users can call the claimPoolLiquidity method of the FFLauncher contract to burn LiquidProof tokens and withdraw the locked LP tokens.
 
 + The project team no longer receives liquidity market maker fee from this point onward.
 
