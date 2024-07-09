@@ -46,7 +46,7 @@ contract FFLiquidProof is IFFLiquidProof, GasManagerable {
     }
 
     function decimals() public view returns (uint8) {
-        return _decimals;
+        return 18;
     }
 
     function totalSupply() public view override returns (uint256) {
