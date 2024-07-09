@@ -6,9 +6,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./IERC20Errors.sol";
 
 /**
- * @title FF Token Standard Interface
+ * @title Fair&Free ERC20 Token Standard Interface
  */
-interface IFFT is IERC20, IERC20Errors {
+interface IFFERC20 is IERC20, IERC20Errors {
     function name() external view returns (string memory);
 
     function symbol() external view returns (string memory);

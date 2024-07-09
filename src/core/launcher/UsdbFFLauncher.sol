@@ -15,7 +15,7 @@ import "../utils/IOutswapV1Pair.sol";
 import "../utils/IORUSDStakeManager.sol";
 import "../generator/ITokenGenerator.sol";
 import "../token/FFLiquidProof.sol";
-import "../token/interfaces/IFFT.sol";
+import "../token/interfaces/IFFERC20.sol";
 import "../token/interfaces/IFFLiquidProof.sol";
 import "../../blast/GasManagerable.sol";
 
@@ -164,8 +164,8 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
         LaunchPool storage pool = _launchPools[poolId];
         address token = pool.token;
         require(block.timestamp >= pool.endTime, "Pool not closed");
-        require(!IFFT(token).transferable(), "Already enable transfer");
-        IFFT(token).enableTransfer();
+        require(!IFFERC20(token).transferable(), "Already enable transfer");
+        IFFERC20(token).enableTransfer();
     }
 
     /**
@@ -231,7 +231,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
 
         address token = pool.token;
         address timeLockVault = pool.timeLockVault;
-        IFFT(token).mint(timeLockVault, remainingTokenAmount);
+        IFFERC20(token).mint(timeLockVault, remainingTokenAmount);
 
         emit GenerateRemainingTokens(poolId, token, timeLockVault, remainingTokenAmount);
     }
@@ -270,8 +270,8 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
         }
 
         FFLiquidProof liquidProof = new FFLiquidProof(
-            string(abi.encodePacked(IFFT(token).name(), " Liquid")),
-            string(abi.encodePacked(IFFT(token).symbol(), " LIQUID")),
+            string(abi.encodePacked(IFFERC20(token).name(), " Liquid")),
+            string(abi.encodePacked(IFFERC20(token).symbol(), " LIQUID")),
             address(this), 
             gasManager()
         );

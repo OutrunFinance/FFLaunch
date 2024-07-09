@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "../core/generator/ITokenGenerator.sol";
 import "../core/utils/Initializable.sol";
-import "../core/token/interfaces/IFFT.sol";
+import "../core/token/interfaces/IFFERC20.sol";
 import "../core/launcher/interfaces/IFFLauncher.sol";
 import "../blast/GasManagerable.sol";
 
@@ -67,7 +67,7 @@ contract FFGenerator is ITokenGenerator, Ownable, GasManagerable, Initializable 
      */
     function generateLiquidityToken(uint256 deployFundAmount) external override onlyLauncher returns (uint256 liquidityTokenAmount) {
         liquidityTokenAmount = deployFundAmount * AMOUNT_BASED_ETH;
-        IFFT(_token).mint(LAUNCHER, liquidityTokenAmount);
+        IFFERC20(_token).mint(LAUNCHER, liquidityTokenAmount);
     }
 
     /**
@@ -87,7 +87,7 @@ contract FFGenerator is ITokenGenerator, Ownable, GasManagerable, Initializable 
             investorTokenAmount = deployFundAmount * AMOUNT_PER_MINT_2;
         }
 
-        IFFT(tokenAddress).mint(receiver, investorTokenAmount);
+        IFFERC20(tokenAddress).mint(receiver, investorTokenAmount);
     }
 
     /**

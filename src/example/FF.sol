@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.24;
 
-import "../core/token/FFT.sol";
+import "../core/token/FFERC20.sol";
 
 /**
  * @title FF Token 
  */
-contract FF is FFT {
-    constructor(address _launcher, address _generator, address _gasManager) FFT("Fair&Free", "FF", _launcher, _generator, _gasManager) {}
+contract FF is FFERC20 {
+    constructor(address _launcher, address _generator, address _gasManager) FFERC20("Fair&Free", "FF", _launcher, _generator, _gasManager) {}
 }
