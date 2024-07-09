@@ -42,8 +42,8 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         address _orETH,
         address _osETH,
         address _gasManager,
-        address _outswapV1Router,
         address _outswapV1Factory,
+        address _outswapV1Router,
         address _orETHStakeManager
     ) Ownable(_owner) GasManagerable(_gasManager) {
         ORETH = _orETH;

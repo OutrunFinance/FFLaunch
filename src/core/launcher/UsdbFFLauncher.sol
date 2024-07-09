@@ -43,8 +43,8 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
         address _orUSD,
         address _osUSD,
         address _gasManager,
-        address _outswapV1Router,
         address _outswapV1Factory,
+        address _outswapV1Router,
         address _orUSDStakeManager
     ) Ownable(_owner) GasManagerable(_gasManager) {
         ORUSD = _orUSD;
