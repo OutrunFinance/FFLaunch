@@ -42,6 +42,14 @@ interface IFFLauncher {
 
     function updateTimeLockVault(uint256 poolId, address token, address timeLockVault) external;
 
+    event ClaimToken(
+        uint256 indexed poolId, 
+        address indexed msgSender, 
+        uint256 fund, 
+        uint256 investorTokenAmount, 
+        uint256 liquidityTokenAmount, 
+        uint256 liquidity
+    );
 
     event ClaimPoolLiquidity(uint256 indexed poolId, address indexed account, uint256 lpAmount);
 

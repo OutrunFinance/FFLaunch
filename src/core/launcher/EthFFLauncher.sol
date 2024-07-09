@@ -147,6 +147,8 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
                 }
                 pool.mintedAmount = mintedAmount;
             }
+
+            emit ClaimToken(poolId, msgSender, fund, investorTokenAmount, liquidityTokenAmount, liquidity);
         } else {
             Address.sendValue(payable(msgSender), fund);
         }

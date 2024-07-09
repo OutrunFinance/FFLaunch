@@ -149,6 +149,8 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
                 }
                 pool.mintedAmount = mintedAmount;
             }
+            
+            emit ClaimToken(poolId, msgSender, fund, investorTokenAmount, liquidityTokenAmount, liquidity);
         } else {
             IERC20(USDB).safeTransfer(msgSender, fund);
         }
