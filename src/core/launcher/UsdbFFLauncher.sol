@@ -191,6 +191,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
      * @param receiver - Address to receive transaction fees
      */
     function claimTransactionFees(uint256 poolId, address receiver) external override {
+        require(receiver != address(0), "Zero address");
         address msgSender = msg.sender;
         LaunchPool storage pool = _launchPools[poolId];
         require(msgSender == pool.generator, "Permission denied");
@@ -303,6 +304,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
      * @notice The address can only be updated after the TimeLockVault contract is reviewed by the Outrun audit team.
      */
     function updateTimeLockVault(uint256 poolId, address token, address timeLockVault) external override onlyOwner {
+        require(timeLockVault != address(0), "Zero address");
         LaunchPool storage pool = _launchPools[poolId];
         require(pool.token == token, "Token mismatch");
         require(block.timestamp <= pool.endTime + pool.lockupDays * DAY, "Time exceeded");
