@@ -8,14 +8,14 @@ import "../src/core/launcher/UsdbFFLauncher.sol";
 contract FFLaunchScript is BaseScript {
     address internal owner;
     address internal gasManager;
-    address internal router;
     address internal factory;
+    address internal router;
 
     function run() public broadcaster {
         owner = vm.envAddress("OWNER");
         gasManager = vm.envAddress("GAS_MANAGER");
-        router = vm.envAddress("OUTSWAP_ROUTER");
         factory = vm.envAddress("OUTSWAP_FACTORY");
+        router = vm.envAddress("OUTSWAP_ROUTER");
 
         _deployEthLauncher();
         _deployUsdbLauncher();
@@ -27,8 +27,8 @@ contract FFLaunchScript is BaseScript {
             vm.envAddress("ORETH"),
             vm.envAddress("OSETH"),
             gasManager,
-            router,
             factory,
+            router,
             vm.envAddress("ORETH_STAKE_MANAGER")
         ));
 
@@ -41,8 +41,8 @@ contract FFLaunchScript is BaseScript {
             vm.envAddress("ORUSD"),
             vm.envAddress("OSUSD"),
             gasManager,
-            router,
             factory,
+            router,
             vm.envAddress("ORUSD_STAKE_MANAGER")
         ));
 
