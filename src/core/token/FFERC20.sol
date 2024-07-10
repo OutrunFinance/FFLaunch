@@ -49,7 +49,7 @@ abstract contract FFERC20 is IFFERC20, GasManagerable {
         return _symbol;
     }
 
-    function decimals() public view returns (uint8) {
+    function decimals() public pure returns (uint8) {
         return 18;
     }
 
