@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -22,4 +22,11 @@ interface IFFERC20 is IERC20, IERC20Errors {
     function enableTransfer() external;
 
     function mint(address _account, uint256 _amount) external;
+
+
+    error PermissionDenied();
+
+    error InsufficientBalance();
+
+    error AlreadyEnableTransfer();
 }

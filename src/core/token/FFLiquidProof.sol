@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.26;
 
 import "./interfaces/IFFLiquidProof.sol";
 import "../../blast/GasManagerable.sol";
@@ -18,7 +18,7 @@ contract FFLiquidProof is IFFLiquidProof, GasManagerable {
     mapping(address account => mapping(address spender => uint256)) private _allowances;
 
     modifier onlyFFLauncher() {
-        require(msg.sender == _launcher, "Only launcher can call");
+        require(msg.sender == _launcher, PermissionDenied());
         _;
     }
 
@@ -70,7 +70,7 @@ contract FFLiquidProof is IFFLiquidProof, GasManagerable {
     }
 
     function burn(address account, uint256 value) external onlyFFLauncher returns (bool) {
-        require(balanceOf(account) >= value, "Insufficient balance");
+        require(balanceOf(account) >= value, InsufficientBalance());
         _burn(account, value);
         return true;
     }

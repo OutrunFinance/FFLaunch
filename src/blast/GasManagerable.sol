@@ -1,14 +1,14 @@
 //SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.26;
 
 import "./IBlast.sol";
 
 abstract contract GasManagerable {
     IBlast public constant BLAST = IBlast(0x4300000000000000000000000000000000000002);
 
-    address private _gasManager;
+    address public gasManager;
 
-    error ZeroAddress();
+    error GasZeroAddress();
 
     error UnauthorizedAccount(address account);
 
@@ -17,9 +17,8 @@ abstract contract GasManagerable {
     event GasManagerTransferred(address indexed previousGasManager, address indexed newGasManager);
 
     constructor(address initialGasManager) {
-        if (initialGasManager == address(0)) {
-            revert ZeroAddress();
-        }
+        require(initialGasManager != address(0), GasZeroAddress());
+
         _transferGasManager(initialGasManager);
 
         BLAST.configureClaimableGas();
@@ -27,14 +26,9 @@ abstract contract GasManagerable {
 
     modifier onlyGasManager() {
         address msgSender = msg.sender;
-        if (gasManager() != msgSender) {
-            revert UnauthorizedAccount(msgSender);
-        }
+        require(gasManager == msgSender, UnauthorizedAccount(msgSender));
+        
         _;
-    }
-
-    function gasManager() public view returns (address) {
-        return _gasManager;
     }
 
     /**
@@ -50,24 +44,23 @@ abstract contract GasManagerable {
      * @param recipient - Address of receive gas
      */
     function claimMaxGas(address recipient) external onlyGasManager returns (uint256 gasAmount) {
-        if (recipient == address(0)) {
-            revert ZeroAddress();
-        }
+        require(recipient != address(0), GasZeroAddress());
 
         gasAmount = BLAST.claimMaxGas(address(this), recipient);
+
         emit ClaimMaxGas(recipient, gasAmount);
     }
 
     function transferGasManager(address newGasManager) public onlyGasManager {
-        if (newGasManager == address(0)) {
-            revert ZeroAddress();
-        }
+        require(newGasManager != address(0), GasZeroAddress());
+
         _transferGasManager(newGasManager);
     }
 
     function _transferGasManager(address newGasManager) internal {
-        address oldGasManager = _gasManager;
-        _gasManager = newGasManager;
+        address oldGasManager = gasManager;
+        gasManager = newGasManager;
+
         emit GasManagerTransferred(oldGasManager, newGasManager);
     }
 }

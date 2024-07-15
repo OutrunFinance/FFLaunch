@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.26;
 
 abstract contract Initializable {
     bool public initialized;
@@ -10,9 +10,7 @@ abstract contract Initializable {
     error InvalidInitialization();
 
     modifier initializer() {
-        if (initialized) {
-            revert InvalidInitialization();
-        }
+        require(!initialized, InvalidInitialization());
 
         initialized = true;
         _;

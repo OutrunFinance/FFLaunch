@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.26;
 
 import "./interfaces/IFFERC20.sol";
 import "../../blast/GasManagerable.sol";
@@ -20,7 +20,7 @@ abstract contract FFERC20 is IFFERC20, GasManagerable {
     mapping(address account => mapping(address spender => uint256)) private _allowances;
 
     modifier onlyGenerator() {
-        require(msg.sender == _generator, "Only token generator can call");
+        require(msg.sender == _generator, PermissionDenied());
         _;
     }
 
@@ -78,8 +78,8 @@ abstract contract FFERC20 is IFFERC20, GasManagerable {
     }
 
     function enableTransfer() external override {
-        require(!_isTransferable, "Already enable transfer");
-        require(msg.sender == _launcher, "Permission denied");
+        require(!_isTransferable, AlreadyEnableTransfer());
+        require(msg.sender == _launcher, PermissionDenied());
         _isTransferable = true;
     }
 
@@ -156,7 +156,7 @@ abstract contract FFERC20 is IFFERC20, GasManagerable {
 
     function burn(uint256 value) external returns (bool) {
         address burner = _msgSender();
-        require(balanceOf(burner) >= value, "Insufficient balance");
+        require(balanceOf(burner) >= value, InsufficientBalance());
         _burn(burner, value);
         return true;
     }

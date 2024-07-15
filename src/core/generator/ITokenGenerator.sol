@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.26;
 
 /**
  * @dev Custom Token Generator
@@ -40,4 +40,6 @@ interface ITokenGenerator {
      * @param receiver - Address to receive transaction fees
      */
     function claimTransactionFees(uint256 poolId, address receiver) external;
+
+    error PermissionDenied();
 }

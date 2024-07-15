@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -25,7 +25,7 @@ contract FFGenerator is ITokenGenerator, Ownable, GasManagerable, Initializable 
     uint256 private _checkPoint1;       // Time check point 1
 
     modifier onlyLauncher() {
-        require(msg.sender == LAUNCHER, "Only launcher");
+        require(msg.sender == LAUNCHER, PermissionDenied());
         _;
     }
 

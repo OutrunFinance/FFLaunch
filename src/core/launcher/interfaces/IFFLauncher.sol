@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.26;
 
 /**
  * @title FFLauncher interface
@@ -41,6 +41,42 @@ interface IFFLauncher {
     function registerPool(LaunchPool calldata poolParam) external returns (uint256 poolId);
 
     function updateTimeLockVault(uint256 poolId, address token, address timeLockVault) external;
+
+
+    error ZeroAddress();
+
+    error LastPoolNotEnd();
+
+    error PermissionDenied();
+
+    error InsufficientFund();
+
+    error AlreadyGenerated();
+
+    error InvalidRegisterInfo();
+
+    error InvalidTokenGenerator();
+
+    error InitialFullCirculation();
+
+    error NotEoaAccount(address account);
+
+    error TokenMismatch(address poolToken);
+
+    error TimeExceeded(uint256 unlockTime);
+
+    error NotLiquidityLockStage(uint256 endTime);
+
+    error InvalidDepositValue(uint256 maxDeposit);
+
+    error NotLiquidityUnlockStage(uint256 unlockTime);
+
+    error NotTokenGenerationStage(uint256 generateTime);
+
+    error InsufficientMintableAmount(uint256 mintableAmount);
+
+    error NotDepositStage(uint256 startTime, uint256 endTime);
+
 
     event ClaimToken(
         uint256 indexed poolId, 

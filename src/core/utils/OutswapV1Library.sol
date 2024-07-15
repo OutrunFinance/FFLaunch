@@ -1,12 +1,19 @@
 //SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.26;
 
+/**
+ * @dev For OutswapV1Pair02
+ */
 library OutswapV1Library {
+    error ZeroAddress();
+
+    error IdenticalAddresses();
+
     // returns sorted token addresses, used to handle return values from pairs sorted in this order
     function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
-        require(tokenA != tokenB, "OutswapV1Library: IDENTICAL_ADDRESSES");
+        require(tokenA != tokenB, IdenticalAddresses());
         (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-        require(token0 != address(0), "OutswapV1Library: ZERO_ADDRESS");
+        require(token0 != address(0), ZeroAddress());
     }
 
     // calculates the CREATE2 address for a pair without making any external calls
@@ -20,8 +27,8 @@ library OutswapV1Library {
                             hex"ff",
                             factory,
                             keccak256(abi.encodePacked(token0, token1)),
-                            /* bytes32 public constant INIT_CODE_PAIR_HASH = keccak256(abi.encodePacked(type(OutswapV1Pair).creationCode)); */
-                            hex"b11291cf74ef5b01d3360f4240ee3ae9b64c14297affa289ced01c032c687976" // init code hash
+                            /* bytes32 public constant INIT_CODE_PAIR_HASH = keccak256(abi.encodePacked(type(OutswapV1Pair02).creationCode, abi.encode(gasManager))); */
+                            hex"32048344e03cb0216d27b35afd5f3433cfaa5fe85288f7796b3727b248b7bc1c" // 1% init code hash
                         )
                     )
                 )

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -79,7 +79,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
      */
     function depositToTempFundPool(uint256 usdbValue) external {
         address msgSender = msg.sender;
-        require(msgSender == tx.origin, "Only EOA account");
+        require(msgSender == tx.origin, NotEoaAccount(msgSender));
 
         uint256 poolId = id;
         LaunchPool storage pool = _launchPools[poolId];
@@ -87,8 +87,8 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
         uint128 maxDeposit = pool.maxDeposit;
         uint64 startTime = pool.startTime;
         uint64 endTime = pool.endTime;
-        require(currentTime > startTime && currentTime < endTime, "Invalid time");
-        require(usdbValue <= maxDeposit, "Invalid vaule");
+        require(currentTime > startTime && currentTime < endTime, NotDepositStage(startTime, endTime));
+        require(usdbValue <= maxDeposit, InvalidDepositValue(maxDeposit));
         IERC20(USDB).safeTransferFrom(msgSender, address(this), usdbValue);
 
         unchecked {
@@ -106,7 +106,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
         LaunchPool storage pool = _launchPools[poolId];
         bytes32 beacon = getBeacon(poolId, msgSender);
         uint256 fund = _tempFundPool[beacon];
-        require(fund > 0, "No fund");
+        require(fund > 0, InsufficientFund());
 
         _tempFund[poolId] -= fund;
         _tempFundPool[beacon] = 0;
@@ -145,7 +145,7 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
                 // if totalSupply == 0, indicates an unlimited amount of mintable tokens
                 if (totalSupply != 0) {
                     uint256 mintableAmount = totalSupply * pool.sharePercent / RATIO;
-                    require(mintedAmount <= mintableAmount, "Insufficient amount of mintable tokens");
+                    require(mintedAmount <= mintableAmount, InsufficientMintableAmount(mintableAmount));
                 }
                 pool.mintedAmount = mintedAmount;
             }
@@ -163,8 +163,8 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
     function enablePoolTokenTransfer(uint256 poolId) external override {
         LaunchPool storage pool = _launchPools[poolId];
         address token = pool.token;
-        require(block.timestamp >= pool.endTime, "Pool not closed");
-        require(!IFFERC20(token).transferable(), "Already enable transfer");
+        uint256 endTime = pool.endTime;
+        require(block.timestamp >= endTime, NotLiquidityLockStage(endTime));
         IFFERC20(token).enableTransfer();
     }
 
@@ -176,7 +176,8 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
     function claimPoolLiquidity(uint256 poolId, uint256 claimedLiquidity) external override {
         address msgSender = msg.sender;
         LaunchPool storage pool = _launchPools[poolId];
-        require(block.timestamp >= pool.endTime + pool.lockupDays * DAY, "Locked liquidity");
+        uint256 unlockTime = pool.endTime + pool.lockupDays * DAY;
+        require(block.timestamp >= unlockTime, NotLiquidityUnlockStage(unlockTime));
         IFFLiquidProof(pool.liquidProof).burn(msgSender, claimedLiquidity);
 
         address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSUSD);
@@ -191,11 +192,12 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
      * @param receiver - Address to receive transaction fees
      */
     function claimTransactionFees(uint256 poolId, address receiver) external override {
-        require(receiver != address(0), "Zero address");
+        require(receiver != address(0), ZeroAddress());
         address msgSender = msg.sender;
         LaunchPool storage pool = _launchPools[poolId];
-        require(msgSender == pool.generator, "Permission denied");
-        require(block.timestamp > pool.endTime, "After end time");
+        require(msgSender == pool.generator, PermissionDenied());
+        uint256 endTime = pool.endTime;
+        require(block.timestamp > endTime, NotLiquidityLockStage(endTime));
 
         address pairAddress = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSUSD);
         IOutswapV1Pair pair = IOutswapV1Pair(pairAddress);
@@ -214,11 +216,12 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
     function generateRemainingTokens(uint256 poolId) external override returns (uint256 remainingTokenAmount) {
         LaunchPool storage pool = _launchPools[poolId];
         uint256 sharePercent = pool.sharePercent;
-        require(sharePercent < RATIO, "No more token");
-        require(!pool.areAllGenerated, "Already generated");
+        require(sharePercent < RATIO, InitialFullCirculation());
+        require(!pool.areAllGenerated,  AlreadyGenerated());
         address msgSender = msg.sender;
-        require(msgSender == pool.generator, "Permission denied");
-        require(block.timestamp >= pool.endTime + (pool.lockupDays + 7) * DAY, "Time not reached");
+        require(msgSender == pool.generator, PermissionDenied());
+        uint256 generateTime = pool.endTime + (pool.lockupDays + 7) * DAY;
+        require(block.timestamp >= generateTime, NotTokenGenerationStage(generateTime));
 
         pool.areAllGenerated = true;
         uint256 totalSupply = pool.totalSupply;
@@ -257,23 +260,23 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
             maxDeposit > 0 && 
             sharePercent > 0 && 
             sharePercent <= RATIO, 
-            "Invalid poolInfo"
+            InvalidRegisterInfo()
         );
 
         address generator = poolParam.generator;
         ITokenGenerator tokenGenerator = ITokenGenerator(generator);
-        require(tokenGenerator.token() == token && tokenGenerator.launcher() == address(this), "Invalid token generator");
+        require(tokenGenerator.token() == token && tokenGenerator.launcher() == address(this), InvalidTokenGenerator());
 
         uint256 currentPoolId = id;
         if (currentPoolId != 0) {
-            require(currentTime > _launchPools[currentPoolId].endTime, "Last pool ongoing");
+            require(currentTime > _launchPools[currentPoolId].endTime, LastPoolNotEnd());
         }
 
         FFLiquidProof liquidProof = new FFLiquidProof(
             string(abi.encodePacked(IFFERC20(token).name(), " Liquid")),
             string(abi.encodePacked(IFFERC20(token).symbol(), " LIQUID")),
             address(this), 
-            gasManager()
+            gasManager
         );
         LaunchPool memory pool = LaunchPool(
             token,
@@ -304,10 +307,12 @@ contract UsdbFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId
      * @notice The address can only be updated after the TimeLockVault contract is reviewed by the Outrun audit team.
      */
     function updateTimeLockVault(uint256 poolId, address token, address timeLockVault) external override onlyOwner {
-        require(timeLockVault != address(0), "Zero address");
+        require(timeLockVault != address(0), ZeroAddress());
         LaunchPool storage pool = _launchPools[poolId];
-        require(pool.token == token, "Token mismatch");
-        require(block.timestamp <= pool.endTime + pool.lockupDays * DAY, "Time exceeded");
+        address poolToken = pool.token;
+        require(poolToken == token, TokenMismatch(poolToken));
+        uint256 unlockTime = pool.endTime + pool.lockupDays * DAY;
+        require(block.timestamp <= unlockTime, TimeExceeded(unlockTime));
         pool.timeLockVault = timeLockVault;
 
         emit UpdateTimeLockVault(poolId, timeLockVault);

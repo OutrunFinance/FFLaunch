@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.26;
 
 interface IERC20Errors {
     error ERC20InsufficientBalance(address sender, uint256 balance, uint256 needed);
