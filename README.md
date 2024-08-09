@@ -49,32 +49,32 @@ For project teams, they can organize a professional meme operations team and ope
 
 ## Advantages of Meme-Based Operations
 
-**1. Attracting Broad Attention**
+**Attracting Broad Attention**
 
 + Viral Spread: Meme coins, due to their fun and entertaining nature, can quickly spread on social media, attracting significant attention and discussion, thereby increasing the project's visibility.
 + Community-Driven: Meme coins often have strong community support, with members spontaneously promoting the project, creating a powerful network effect.
 
-**2. Increasing User Stickiness and Activity**
+**Increasing User Stickiness and Activity**
 
 + Entertainment and Interactivity: By leveraging meme-based operations, project teams can introduce interactive and entertaining elements, making user engagement more than just an investment but also an enjoyable and social activity.
 + User Engagement: Users are more likely to feel a sense of participation and belonging through meme-based operations, leading to active involvement in various project activities and increased user retention.
 
-**3. Reducing Marketing Costs**
+**Reducing Marketing Costs**
 
 + Community-Driven Promotion: Fans of meme coins usually promote the project spontaneously on major social platforms, reducing the marketing costs for the project team.
 + Organic Growth: Through viral spread and community promotion, projects can achieve organic growth, decreasing reliance on paid advertisements.
 
-**4. Enhancing Market Liquidity**
+**Enhancing Market Liquidity**
 
 + High-Frequency Trading: Meme coins, due to their high popularity and attention, typically experience high trading frequency, increasing market liquidity.
 + Attracting New Users: Meme-based operations can attract a large number of new users, especially young and entertainment-oriented investors, increasing market participation and liquidity.
 
-**5. Increasing Token Value**
+**Increasing Token Value**
 
 + Scarcity and Demand: During meme-based operations, limited issuance and high-frequency interactions can create token scarcity, increasing market demand and boosting token value.
 + Long-Term Holding: Users with a high sense of participation and belonging are more likely to hold tokens for the long term, reducing market sell pressure.
 
-**6.Innovation and Flexibility**
+**Innovation and Flexibility**
 
 + Unique Marketing Approach: Meme-based operations offer innovations and flexibility that traditional marketing methods cannot achieve, allowing projects to interact and communicate with users in unique ways.
 + Flexible Operational Strategies: Project teams can adjust their operational strategies based on community reactions and market feedback, maintaining market excitement and user interest.
@@ -113,14 +113,14 @@ Through meme-based operations, FFLaunch project teams can significantly enhance 
 
 ## Impact of FFLaunch on Outrun Ecosystem
 
-### 1. Increasing Outstake's TVL
+**Increasing Outstake's TVL**
 
 Users participating in FFLaunch will stake their ETH and USDB in the Outstake protocol. These staked assets will form liquidity pools (LPs) along with reserved tokens and will be locked for the same duration as the Outstake. 
 
 + Users will receive corresponding Blast native yield after staking ETH and USDB.
 + The total locked value (TVL) of Outstake will significantly increase due to the increase in staked assets.
 
-### 2. Boosting Demand for osETH and osUSD
+**Boosting Demand for osETH and osUSD**
 
 When participating in FFLaunch, the Outstake protocol will mint osETH and osUSD, which will be locked in Outswap. Users will need to use osETH or osUSD when purchasing tokens.
 
@@ -128,14 +128,14 @@ When participating in FFLaunch, the Outstake protocol will mint osETH and osUSD,
 + Users may stake more ETH and USDB to acquire osETH and osUSD, or directly purchase these tokens from Outswap.
 + Consequently, the TVL and trading volume of Outswap will increase.
 
-### 3. Cultivating User Usage Habits
+**Cultivating User Usage Habits**
 
 During the prolonged period of locked liquidity, users will gradually become accustomed to trading with osETH and osUSD.
 
 + Long-term usage habits will help users accept and become accustomed to using these tokens, osETH and osUSD will serve as the base tokens for trading pairs.
 + With the addition of more trading pairs, an increasing number of users will use osETH and osUSD, further driving the prosperity of the Outrun ecosystem.
 
-### 4. Breaking the Limitations of LST Usage Scenarios
+**Breaking the Limitations of LST Usage Scenarios**
 
 Many Liquidity Staking Tokens (LSTs) face limitations in their usage scenarios, but FFLaunch provides an innovative way to overcome these limitations
 
