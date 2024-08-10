@@ -9,9 +9,9 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./interfaces/IFFLauncher.sol";
 import "../utils/IORETH.sol";
 import "../utils/AutoIncrementId.sol";
-import "../utils/OutswapV1Library.sol";
-import "../utils/IOutswapV1Router.sol";
-import "../utils/IOutswapV1Pair.sol";
+import "../utils/OutrunAMMLibrary.sol";
+import "../utils/IOutrunAMMRouter.sol";
+import "../utils/IOutrunAMMPair.sol";
 import "../utils/IORETHStakeManager.sol";
 import "../generator/ITokenGenerator.sol";
 import "../token/FFLiquidProof.sol";
@@ -30,8 +30,8 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
     address public immutable ORETH;
     address public immutable OSETH;
     address public immutable orETHStakeManager;
-    address public immutable outswapV1Router;
-    address public immutable outswapV1Factory;
+    address public immutable outrunAMMRouter;
+    address public immutable outrunAMMFactory;
 
     mapping(uint256 poolId => LaunchPool) private _launchPools;
     mapping(uint256 poolId => uint256) private _tempFund;
@@ -42,18 +42,18 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         address _orETH,
         address _osETH,
         address _gasManager,
-        address _outswapV1Factory,
-        address _outswapV1Router,
+        address _outrunAMMFactory,
+        address _outrunAMMRouter,
         address _orETHStakeManager
     ) Ownable(_owner) GasManagerable(_gasManager) {
         ORETH = _orETH;
         OSETH = _osETH;
-        outswapV1Router = _outswapV1Router;
-        outswapV1Factory = _outswapV1Factory;
+        outrunAMMRouter = _outrunAMMRouter;
+        outrunAMMFactory = _outrunAMMFactory;
         orETHStakeManager = _orETHStakeManager;
 
         IERC20(ORETH).approve(_orETHStakeManager, type(uint256).max);
-        IERC20(OSETH).approve(_outswapV1Router, type(uint256).max);
+        IERC20(OSETH).approve(_outrunAMMRouter, type(uint256).max);
     }
 
     function launchPools(uint256 poolId) external view override returns (LaunchPool memory) {
@@ -121,9 +121,9 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
             uint256 investorTokenAmount = ITokenGenerator(generator).generateInvestorToken(amountInOSETH, msgSender);
             uint256 liquidityTokenAmount = ITokenGenerator(generator).generateLiquidityToken(amountInOSETH);
             address token = pool.token;
-            address router = outswapV1Router;
+            address router = outrunAMMRouter;
             IERC20(token).approve(router, liquidityTokenAmount);
-            (,, uint256 liquidity) = IOutswapV1Router(router).addLiquidity(
+            (,, uint256 liquidity) = IOutrunAMMRouter(router).addLiquidity(
                 OSETH,
                 token,
                 amountInOSETH,
@@ -178,7 +178,7 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         require(block.timestamp >= unlockTime, NotLiquidityUnlockStage(unlockTime));
         IFFLiquidProof(pool.liquidProof).burn(msgSender, claimedLiquidity);
 
-        address pair = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSETH);
+        address pair = OutrunAMMLibrary.pairFor(outrunAMMFactory, pool.token, OSETH);
         IERC20(pair).safeTransfer(msgSender, claimedLiquidity);
 
         emit ClaimPoolLiquidity(poolId, msgSender, claimedLiquidity);
@@ -197,8 +197,8 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         uint256 endTime = pool.endTime;
         require(block.timestamp > endTime, NotLiquidityLockStage(endTime));
 
-        address pairAddress = OutswapV1Library.pairFor(outswapV1Factory, pool.token, OSETH);
-        IOutswapV1Pair pair = IOutswapV1Pair(pairAddress);
+        address pairAddress = OutrunAMMLibrary.pairFor(outrunAMMFactory, pool.token, OSETH);
+        IOutrunAMMPair pair = IOutrunAMMPair(pairAddress);
         (uint256 amount0, uint256 amount1) = pair.claimMakerFee();
         IERC20(pair.token0()).safeTransfer(receiver, amount0);
         IERC20(pair.token1()).safeTransfer(receiver, amount1);

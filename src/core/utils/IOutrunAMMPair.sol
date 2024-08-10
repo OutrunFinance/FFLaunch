@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.26;
 
-interface IOutswapV1Pair {
+interface IOutrunAMMPair {
     function token0() external view returns (address);
     
     function token1() external view returns (address);
