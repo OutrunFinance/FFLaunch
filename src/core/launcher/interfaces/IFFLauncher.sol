@@ -11,24 +11,21 @@ interface IFFLauncher {
         address liquidProof;            // Liquid proof token address
         address timeLockVault;          // Remaining tokens time lock vault
         uint256 totalLiquidityFund;     // Funds(osETH|osUSD) actually added to the liquidity pool.
-        uint128 maxDeposit;             // The maximum amount of funds that can be deposited each time.
         uint64 startTime;               // StartTime of launchPool
         uint64 endTime;                 // EndTime of launchPool
-        uint256 lockupDays;             // LockupDay of liquidity
+        uint128 lockupDays;             // LockupDay of liquidity
         uint256 totalSupply;            // Token totalSupply, if 0, indicates unlimited mintable tokens.
         uint256 sharePercent;           // Percentage of totalSupply that can be minted by LaunchPool, if 100%, indicates can't generate remaining tokens.
         uint256 mintedAmount;           // Amount of minted tokens by LaunchPool, including tokens in the liquidity pool.
         bool areAllGenerated;           // Are all tokens generated?
     }
 
+    function minDeposit() external view returns (uint256);
+
     function launchPools(uint256 poolId) external view returns (LaunchPool memory);
 
-    function tempFund(uint256 poolId) external view returns (uint256);
+    function setMinDeposit(uint256 minDeposit) external;
 
-    function tempFundPool(uint256 poolId, address account) external view returns (uint256);
-
-
-    function claimTokenOrFund(uint256 poolId) external;
 
     function enablePoolTokenTransfer(uint256 poolId) external;
 
@@ -59,29 +56,27 @@ interface IFFLauncher {
 
     error InitialFullCirculation();
 
-    error NotEoaAccount(address account);
-
     error TokenMismatch(address poolToken);
 
     error TimeExceeded(uint256 unlockTime);
 
     error NotLiquidityLockStage(uint256 endTime);
 
-    error InvalidDepositValue(uint256 maxDeposit);
-
     error NotLiquidityUnlockStage(uint256 unlockTime);
 
     error NotTokenGenerationStage(uint256 generateTime);
+
+    error InsufficientDepositAmount(uint256 minDeposit);
 
     error InsufficientMintableAmount(uint256 mintableAmount);
 
     error NotDepositStage(uint256 startTime, uint256 endTime);
 
 
-    event ClaimToken(
+    event Deposit(
         uint256 indexed poolId, 
-        address indexed msgSender, 
-        uint256 fund, 
+        address indexed account, 
+        uint256 amountInPT, 
         uint256 investorTokenAmount, 
         uint256 liquidityTokenAmount, 
         uint256 liquidity
@@ -89,7 +84,7 @@ interface IFFLauncher {
 
     event ClaimPoolLiquidity(uint256 indexed poolId, address indexed account, uint256 lpAmount);
 
-    event ClaimTransactionFees(uint256 indexed poolId, address to, uint256 amount0, uint256 amount1);
+    event ClaimTransactionFees(uint256 indexed poolId, address to, address token0, uint256 amount0, address token1, uint256 amount1);
 
     event GenerateRemainingTokens(uint256 indexed poolId, address token, address timeLockVault, uint256 remainingTokenAmount);
 

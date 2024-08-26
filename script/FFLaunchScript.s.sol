@@ -29,7 +29,8 @@ contract FFLaunchScript is BaseScript {
             gasManager,
             factory,
             router,
-            vm.envAddress("ORETH_STAKE_MANAGER")
+            vm.envAddress("ORETH_STAKE_MANAGER"),
+            5 * 10 ** 16
         ));
 
         console.log("EthFFLauncher deployed on %s", ethLauncherAddress);
@@ -43,7 +44,8 @@ contract FFLaunchScript is BaseScript {
             gasManager,
             factory,
             router,
-            vm.envAddress("ORUSD_STAKE_MANAGER")
+            vm.envAddress("ORUSD_STAKE_MANAGER"),
+            100 * 10 ** 18
         ));
 
         console.log("UsdbFFLauncher deployed on %s", usdbLauncherAddress);

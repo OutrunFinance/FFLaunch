@@ -7,12 +7,12 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./interfaces/IFFLauncher.sol";
-import "../utils/IORETH.sol";
 import "../utils/AutoIncrementId.sol";
-import "../utils/OutrunAMMLibrary.sol";
-import "../utils/IOutrunAMMRouter.sol";
-import "../utils/IOutrunAMMPair.sol";
-import "../utils/IORETHStakeManager.sol";
+import "../external/IORETH.sol";
+import "../external/OutrunAMMLibrary.sol";
+import "../external/IOutrunAMMRouter.sol";
+import "../external/IOutrunAMMPair.sol";
+import "../external/IStakeManager.sol";
 import "../generator/ITokenGenerator.sol";
 import "../token/FFLiquidProof.sol";
 import "../token/interfaces/IFFERC20.sol";
@@ -29,13 +29,12 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
     uint256 public constant RATIO = 10000;
     address public immutable ORETH;
     address public immutable OSETH;
-    address public immutable orETHStakeManager;
-    address public immutable outrunAMMRouter;
-    address public immutable outrunAMMFactory;
+    address public immutable OUTRUN_AMM_ROUTER;
+    address public immutable OUTRUN_AMM_FACTORY;
+    address public immutable ORETH_STAKE_MANAGER;
 
+    uint256 private _minDeposit;
     mapping(uint256 poolId => LaunchPool) private _launchPools;
-    mapping(uint256 poolId => uint256) private _tempFund;
-    mapping(bytes32 beacon => uint256) private _tempFundPool;
 
     constructor(
         address _owner,
@@ -44,114 +43,85 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         address _gasManager,
         address _outrunAMMFactory,
         address _outrunAMMRouter,
-        address _orETHStakeManager
+        address _orETHStakeManager,
+        uint256 minDeposit_
     ) Ownable(_owner) GasManagerable(_gasManager) {
         ORETH = _orETH;
         OSETH = _osETH;
-        outrunAMMRouter = _outrunAMMRouter;
-        outrunAMMFactory = _outrunAMMFactory;
-        orETHStakeManager = _orETHStakeManager;
+        OUTRUN_AMM_ROUTER = _outrunAMMRouter;
+        OUTRUN_AMM_FACTORY = _outrunAMMFactory;
+        ORETH_STAKE_MANAGER = _orETHStakeManager;
+        _minDeposit = minDeposit_;
 
         IERC20(ORETH).approve(_orETHStakeManager, type(uint256).max);
         IERC20(OSETH).approve(_outrunAMMRouter, type(uint256).max);
+    }
+
+    function minDeposit() external view override returns (uint256) {
+        return _minDeposit;
     }
 
     function launchPools(uint256 poolId) external view override returns (LaunchPool memory) {
         return _launchPools[poolId];
     }
 
-    function tempFund(uint256 poolId) external view override returns (uint256) {
-        return _tempFund[poolId];
-    }
-
-    function tempFundPool(uint256 poolId, address account) external view override returns (uint256) {
-        return _tempFundPool[getBeacon(poolId, account)];
-    }
-
-    function getBeacon(uint256 poolId, address account) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(poolId, account));
+    function setMinDeposit(uint256 minDeposit_) external override onlyOwner {
+        _minDeposit = minDeposit_;
     }
 
     /**
-     * @dev Deposit temporary fund
+     * @dev Deposit ETH and mint token
      */
-    function depositToTempFundPool() public payable {
-        address msgSender = msg.sender;
-        require(msgSender == tx.origin, NotEoaAccount(msgSender));
-
+    function deposit() public payable {
         uint256 msgValue = msg.value;
+        require(msgValue >= _minDeposit, InsufficientDepositAmount(_minDeposit));
+
         uint256 poolId = id;
         LaunchPool storage pool = _launchPools[poolId];
         uint256 currentTime = block.timestamp;
-        uint128 maxDeposit = pool.maxDeposit;
         uint64 startTime = pool.startTime;
         uint64 endTime = pool.endTime;
+        uint128 lockupDays = pool.lockupDays;
         require(currentTime > startTime && currentTime < endTime, NotDepositStage(startTime, endTime));
-        require(msgValue <= maxDeposit, InvalidDepositValue(maxDeposit));
+
+        address msgSender = msg.sender;
+        IORETH(ORETH).deposit{value: msgValue}();
+        (uint256 amountInOSETH,) = IStakeManager(ORETH_STAKE_MANAGER).stake(msgValue, lockupDays, msgSender, address(this), msgSender);
+
+        // Calling the registered tokenGenerator contract to get liquidity token and mint token to user
+        address generator = pool.generator;
+        uint256 investorTokenAmount = ITokenGenerator(generator).generateInvestorToken(amountInOSETH, msgSender);
+        uint256 liquidityTokenAmount = ITokenGenerator(generator).generateLiquidityToken(amountInOSETH);
 
         unchecked {
-            _tempFund[poolId] += msgValue;
-            _tempFundPool[getBeacon(poolId, msgSender)] += msgValue;
-        }
-    }
+            uint256 mintedAmount = pool.mintedAmount + liquidityTokenAmount + investorTokenAmount;            
 
-    /**
-     * @dev Claim token or refund after endTime
-     * @param poolId - LaunchPool id
-     */
-    function claimTokenOrFund(uint256 poolId) external override {
-        address msgSender = msg.sender;
-        LaunchPool storage pool = _launchPools[poolId];
-        bytes32 beacon = getBeacon(poolId, msgSender);
-        uint256 fund = _tempFundPool[beacon];
-        require(fund > 0, InsufficientFund());
-
-        _tempFund[poolId] -= fund;
-        _tempFundPool[beacon] = 0;
-
-        uint64 endTime = pool.endTime;
-        uint256 lockupDays = pool.lockupDays;
-        uint256 currentTime = block.timestamp;
-        if (currentTime < endTime) {
-            IORETH(ORETH).deposit{value: fund}();
-            (uint256 amountInOSETH,) = IORETHStakeManager(orETHStakeManager).stake(fund, lockupDays, msgSender, address(this), msgSender);
-
-            // Calling the registered tokenGenerator contract to get liquidity token and mint token to user
-            address generator = pool.generator;
-            uint256 investorTokenAmount = ITokenGenerator(generator).generateInvestorToken(amountInOSETH, msgSender);
-            uint256 liquidityTokenAmount = ITokenGenerator(generator).generateLiquidityToken(amountInOSETH);
-            address token = pool.token;
-            address router = outrunAMMRouter;
-            IERC20(token).approve(router, liquidityTokenAmount);
-            (,, uint256 liquidity) = IOutrunAMMRouter(router).addLiquidity(
-                OSETH,
-                token,
-                amountInOSETH,
-                liquidityTokenAmount,
-                amountInOSETH,
-                liquidityTokenAmount,
-                address(this),
-                block.timestamp + 600
-            );
-            IFFLiquidProof(pool.liquidProof).mint(msgSender, liquidity);
-            unchecked {
-                pool.totalLiquidityFund += amountInOSETH;
-
-                uint256 mintedAmount = pool.mintedAmount + liquidityTokenAmount + investorTokenAmount;
-                uint256 totalSupply = pool.totalSupply;
-
-                // if totalSupply == 0, indicates an unlimited amount of mintable tokens
-                if (totalSupply != 0) {
-                    uint256 mintableAmount = totalSupply * pool.sharePercent / RATIO;
-                    require(mintedAmount <= mintableAmount, InsufficientMintableAmount(mintableAmount));
-                }
-                pool.mintedAmount = mintedAmount;
+            // if totalSupply == 0, indicates an unlimited amount of mintable tokens
+            uint256 totalSupply = pool.totalSupply;
+            if (totalSupply != 0) {
+                uint256 mintableAmount = totalSupply * pool.sharePercent / RATIO;
+                require(mintedAmount <= mintableAmount, InsufficientMintableAmount(mintableAmount));
             }
-
-            emit ClaimToken(poolId, msgSender, fund, investorTokenAmount, liquidityTokenAmount, liquidity);
-        } else {
-            Address.sendValue(payable(msgSender), fund);
+            pool.mintedAmount = mintedAmount;
+            pool.totalLiquidityFund += amountInOSETH;
         }
+
+        address token = pool.token;
+        address router = OUTRUN_AMM_ROUTER;
+        IERC20(token).approve(router, liquidityTokenAmount);
+        (,, uint256 liquidity) = IOutrunAMMRouter(router).addLiquidity(
+            OSETH,
+            token,
+            amountInOSETH,
+            liquidityTokenAmount,
+            amountInOSETH,
+            liquidityTokenAmount,
+            address(this),
+            block.timestamp + 600
+        );
+        IFFLiquidProof(pool.liquidProof).mint(msgSender, liquidity);
+
+        emit Deposit(poolId, msgSender, amountInOSETH, investorTokenAmount, liquidityTokenAmount, liquidity);
     }
 
     /**
@@ -178,7 +148,7 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         require(block.timestamp >= unlockTime, NotLiquidityUnlockStage(unlockTime));
         IFFLiquidProof(pool.liquidProof).burn(msgSender, claimedLiquidity);
 
-        address pair = OutrunAMMLibrary.pairFor(outrunAMMFactory, pool.token, OSETH);
+        address pair = OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, pool.token, OSETH);
         IERC20(pair).safeTransfer(msgSender, claimedLiquidity);
 
         emit ClaimPoolLiquidity(poolId, msgSender, claimedLiquidity);
@@ -197,13 +167,15 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         uint256 endTime = pool.endTime;
         require(block.timestamp > endTime, NotLiquidityLockStage(endTime));
 
-        address pairAddress = OutrunAMMLibrary.pairFor(outrunAMMFactory, pool.token, OSETH);
+        address pairAddress = OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, pool.token, OSETH);
         IOutrunAMMPair pair = IOutrunAMMPair(pairAddress);
         (uint256 amount0, uint256 amount1) = pair.claimMakerFee();
-        IERC20(pair.token0()).safeTransfer(receiver, amount0);
-        IERC20(pair.token1()).safeTransfer(receiver, amount1);
+        address token0 = pair.token0();
+        address token1 = pair.token1();
+        IERC20(token0).safeTransfer(receiver, amount0);
+        IERC20(token1).safeTransfer(receiver, amount1);
 
-        emit ClaimTransactionFees(poolId, receiver, amount0, amount1);
+        emit ClaimTransactionFees(poolId, receiver, token0, amount0, token1, amount1);
     }
 
     /**
@@ -248,14 +220,12 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
         address timeLockVault = poolParam.timeLockVault;
         uint64 startTime = poolParam.startTime;
         uint64 endTime = poolParam.endTime;
-        uint128 maxDeposit = poolParam.maxDeposit;
         uint256 sharePercent = poolParam.sharePercent;
         require(
             token != address(0) && 
             timeLockVault != address(0) &&
             startTime > currentTime && 
             endTime > currentTime && 
-            maxDeposit > 0 && 
             sharePercent > 0 && 
             sharePercent <= RATIO, 
             InvalidRegisterInfo()
@@ -282,7 +252,6 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
             address(liquidProof),
             timeLockVault,
             0,
-            maxDeposit,
             startTime,
             endTime,
             poolParam.lockupDays,
@@ -317,6 +286,6 @@ contract EthFFLauncher is IFFLauncher, Ownable, GasManagerable, AutoIncrementId 
     }
 
     receive() external payable {
-        depositToTempFundPool();
+        deposit();
     }
 }
