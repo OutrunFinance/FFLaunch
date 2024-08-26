@@ -11,6 +11,7 @@ import "../utils/AutoIncrementId.sol";
 import "../external/OutrunAMMLibrary.sol";
 import "../external/IOutrunAMMRouter.sol";
 import "../external/IOutrunAMMPair.sol";
+import "../external/IListaStakeManager.sol";
 import "../external/INativeYieldTokenStakeManager.sol";
 import "../generator/ITokenGenerator.sol";
 import "../token/FFLiquidProof.sol";
@@ -27,6 +28,7 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
     uint256 public constant RATIO = 10000;
     address public immutable SLISBNB;
     address public immutable OSLISBNB;
+    address public immutable LISTA_STAKE_MANAGER;
     address public immutable LISTA_BNB_STAKE_MANAGER;
     address public immutable OUTRUN_AMM_ROUTER;
     address public immutable OUTRUN_AMM_FACTORY;
@@ -40,6 +42,7 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
         address _oslisBNB,
         address _outrunAMMRouter,
         address _outrunAMMFactory,
+        address _listaStakeManager,
         address _listaBNBStakeManager,
         uint256 minDeposit_
     ) Ownable(_owner) {
@@ -47,6 +50,7 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
         OSLISBNB = _oslisBNB;
         OUTRUN_AMM_ROUTER = _outrunAMMRouter;
         OUTRUN_AMM_FACTORY = _outrunAMMFactory;
+        LISTA_STAKE_MANAGER = _listaStakeManager;
         LISTA_BNB_STAKE_MANAGER = _listaBNBStakeManager;
         _minDeposit = minDeposit_;
 
@@ -66,14 +70,7 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
         _minDeposit = minDeposit_;
     }
 
-    /**
-     * @dev Deposit slisBNB and mint token
-     * @param poolId - LaunchPool id
-     * @param slisBNBAmount - Amount of slisBNB to deposit
-     */
-    function deposit(uint256 poolId, uint256 slisBNBAmount) external override {
-        require(slisBNBAmount >= _minDeposit, InsufficientDepositAmount(_minDeposit));
-
+    function _stakeAndMint(uint256 poolId, uint256 slisBNBAmount) internal {
         LaunchPool storage pool = _launchPools[poolId];
         uint256 currentTime = block.timestamp;
         uint64 startTime = pool.startTime;
@@ -81,9 +78,8 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
         uint128 lockupDays = pool.lockupDays;
         require(currentTime > startTime && currentTime < endTime, NotDepositStage(startTime, endTime));
 
+        // stake native yield token
         address msgSender = msg.sender;
-        IERC20(SLISBNB).safeTransferFrom(msgSender, address(this), slisBNBAmount);
-
         (uint256 amountInPT,) = INativeYieldTokenStakeManager(LISTA_BNB_STAKE_MANAGER).stake(slisBNBAmount, lockupDays, msgSender, address(this), msgSender);
 
         // Calling the registered tokenGenerator contract to get liquidity token and mint token to user
@@ -119,7 +115,29 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
         );
         IFFLiquidProof(pool.liquidProof).mint(msgSender, liquidity);
             
-        emit Deposit(poolId, msgSender, amountInPT, investorTokenAmount, liquidityTokenAmount, liquidity);
+        emit StakeAndMint(poolId, msgSender, amountInPT, investorTokenAmount, liquidityTokenAmount, liquidity);
+    }
+
+    /**
+     * @dev Deposit BNB and mint token
+     */
+    function depositFromNativeToken() external payable override{
+        uint256 msgValue = msg.value;
+        require(msgValue >= _minDeposit, InsufficientDepositAmount(msgValue));
+        IListaStakeManager(LISTA_STAKE_MANAGER).deposit{value: msgValue}();
+
+        _stakeAndMint(id, IERC20(SLISBNB).balanceOf(address(this)));
+    }
+
+    /**
+     * @dev Deposit slisBNB and mint token
+     * @param slisBNBAmount - Amount of slisBNB to deposit
+     */
+    function deposit(uint256 slisBNBAmount) external override {
+        require(slisBNBAmount >= _minDeposit, InsufficientDepositAmount(_minDeposit));
+        IERC20(SLISBNB).safeTransferFrom(msg.sender, address(this), slisBNBAmount);
+
+        _stakeAndMint(id, slisBNBAmount);
     }
 
     /**

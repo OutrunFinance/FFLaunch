@@ -24,8 +24,9 @@ contract FFLaunchScript is BaseScript {
             vm.envAddress("OSLISBNB"),
             router,
             factory,
+            vm.envAddress("LISTA_STAKE_MANAGER"),
             vm.envAddress("LISTA_BNB_STAKE_MANAGER"),
-            1e17
+            10**17
         ));
 
         console.log("ListaBnbFFLauncher deployed on %s", launcherAddress);

@@ -26,7 +26,9 @@ interface IFFLauncher {
 
     function setMinDeposit(uint256 minDeposit) external;
 
-    function deposit(uint256 poolId, uint256 nativeYieldTokenAmount) external;
+    function depositFromNativeToken() external payable;
+
+    function deposit(uint256 nativeYieldTokenAmount) external;
 
     function enablePoolTokenTransfer(uint256 poolId) external;
 
@@ -72,7 +74,7 @@ interface IFFLauncher {
     error NotDepositStage(uint256 startTime, uint256 endTime);
 
 
-    event Deposit(
+    event StakeAndMint(
         uint256 indexed poolId, 
         address indexed account, 
         uint256 ptFund, 
