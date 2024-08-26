@@ -2,50 +2,32 @@
 pragma solidity ^0.8.24;
 
 import "./BaseScript.s.sol";
-import "../src/core/launcher/EthFFLauncher.sol";
-import "../src/core/launcher/UsdbFFLauncher.sol";
+import "../src/core/launcher/ListaBnbFFLauncher.sol";
 
 contract FFLaunchScript is BaseScript {
     address internal owner;
-    address internal gasManager;
     address internal factory;
     address internal router;
 
     function run() public broadcaster {
         owner = vm.envAddress("OWNER");
-        gasManager = vm.envAddress("GAS_MANAGER");
-        factory = vm.envAddress("OUTSWAP_FACTORY");
-        router = vm.envAddress("OUTSWAP_ROUTER");
+        router = vm.envAddress("OUTRUN_AMM_ROUTER");
+        factory = vm.envAddress("OUTRUN_AMM_FACTORY");
 
-        _deployEthLauncher();
-        _deployUsdbLauncher();
+        _deployListaBNBLauncher();
     }
 
-    function _deployEthLauncher() internal {
-        address ethLauncherAddress = address(new EthFFLauncher(
+    function _deployListaBNBLauncher() internal {
+        address launcherAddress = address(new ListaBnbFFLauncher(
             owner,
-            vm.envAddress("ORETH"),
-            vm.envAddress("OSETH"),
-            gasManager,
-            factory,
+            vm.envAddress("SLISBNB"),
+            vm.envAddress("OSLISBNB"),
             router,
-            vm.envAddress("ORETH_STAKE_MANAGER")
+            factory,
+            vm.envAddress("LISTA_BNB_STAKE_MANAGER"),
+            1e17
         ));
 
-        console.log("EthFFLauncher deployed on %s", ethLauncherAddress);
-    }
-
-    function _deployUsdbLauncher() internal {
-        address usdbLauncherAddress = address(new UsdbFFLauncher(
-            owner,
-            vm.envAddress("ORUSD"),
-            vm.envAddress("OSUSD"),
-            gasManager,
-            factory,
-            router,
-            vm.envAddress("ORUSD_STAKE_MANAGER")
-        ));
-
-        console.log("UsdbFFLauncher deployed on %s", usdbLauncherAddress);
+        console.log("ListaBnbFFLauncher deployed on %s", launcherAddress);
     }
 }

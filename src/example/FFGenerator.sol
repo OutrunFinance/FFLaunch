@@ -7,12 +7,11 @@ import "../core/generator/ITokenGenerator.sol";
 import "../core/utils/Initializable.sol";
 import "../core/token/interfaces/IFFERC20.sol";
 import "../core/launcher/interfaces/IFFLauncher.sol";
-import "../blast/GasManagerable.sol";
 
 /**
  * @dev example - $FF generator
  */
-contract FFGenerator is ITokenGenerator, Ownable, GasManagerable, Initializable {
+contract FFGenerator is ITokenGenerator, Ownable, Initializable {
     address public immutable LAUNCHER;
 
     uint256 public constant AMOUNT_PER_MINT_0 = 6000;
@@ -32,10 +31,9 @@ contract FFGenerator is ITokenGenerator, Ownable, GasManagerable, Initializable 
     constructor(
         address owner_,
         address launcher_,
-        address gasManager_,
         uint256 checkPoint0_,
         uint256 checkPoint1_
-    ) Ownable(owner_) GasManagerable(gasManager_) {
+    ) Ownable(owner_) {
         LAUNCHER = launcher_;
         _checkPoint0 = checkPoint0_;
         _checkPoint1 = checkPoint1_;

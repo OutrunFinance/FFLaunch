@@ -2,12 +2,11 @@
 pragma solidity ^0.8.26;
 
 import "./interfaces/IFFERC20.sol";
-import "../../blast/GasManagerable.sol";
 
 /**
  * @title Fair&Free ERC20 Standard
  */
-abstract contract FFERC20 is IFFERC20, GasManagerable {
+abstract contract FFERC20 is IFFERC20 {
     string private _name;
     string private _symbol;
     uint8 private _decimals;
@@ -19,18 +18,7 @@ abstract contract FFERC20 is IFFERC20, GasManagerable {
     mapping(address account => uint256) private _balances;
     mapping(address account => mapping(address spender => uint256)) private _allowances;
 
-    modifier onlyGenerator() {
-        require(msg.sender == _generator, PermissionDenied());
-        _;
-    }
-
-    constructor(
-        string memory name_, 
-        string memory symbol_, 
-        address launcher_, 
-        address generator_,
-        address gasManager_
-    ) GasManagerable(gasManager_) {
+    constructor(string memory name_, string memory symbol_, address launcher_, address generator_) {
         _name = name_;
         _symbol = symbol_;
         _launcher = launcher_;
@@ -83,7 +71,8 @@ abstract contract FFERC20 is IFFERC20, GasManagerable {
         _isTransferable = true;
     }
 
-    function mint(address account, uint256 amount) external override onlyGenerator {
+    function mint(address account, uint256 amount) external override {
+        require(msg.sender == _generator, PermissionDenied());
         _mint(account, amount);
     }
 

@@ -2,12 +2,11 @@
 pragma solidity ^0.8.26;
 
 import "./interfaces/IFFLiquidProof.sol";
-import "../../blast/GasManagerable.sol";
 
 /**
  * @title FFLaunch Liquid Proof Token
  */
-contract FFLiquidProof is IFFLiquidProof, GasManagerable {
+contract FFLiquidProof is IFFLiquidProof {
     string private _name;
     string private _symbol;
     uint8 private _decimals;
@@ -22,12 +21,7 @@ contract FFLiquidProof is IFFLiquidProof, GasManagerable {
         _;
     }
 
-    constructor(
-        string memory name_, 
-        string memory symbol_, 
-        address launcher_, 
-        address gasManager_
-    ) GasManagerable(gasManager_) {
+    constructor(string memory name_, string memory symbol_, address launcher_) {
         _name = name_;
         _symbol = symbol_;
         _launcher = launcher_;
