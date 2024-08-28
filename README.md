@@ -2,7 +2,7 @@
 
 **Read this in Chinese: [中文](README.cn.md)**
 
-# ⚖️ FFLaunch
+# ⚖️ FFLaunch (Startup Team Fundraising)
 
 ### A truly community-driven token financing paradigm
 
