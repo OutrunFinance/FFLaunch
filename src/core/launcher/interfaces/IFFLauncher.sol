@@ -21,8 +21,6 @@ interface IFFLauncher {
 
     function getPoolUnlockTime(uint256 poolId) external view returns (uint256);
 
-    function setMinDeposit(uint256 minDeposit) external;
-
     function deposit(uint256 amountInUPT) external;
 
     function enablePoolTokenTransfer(uint256 poolId) external;
@@ -61,8 +59,6 @@ interface IFFLauncher {
     error NotLiquidityUnlockStage(uint256 unlockTime);
 
     error NotTokenGenerationStage(uint256 generateTime);
-
-    error InsufficientDepositAmount(uint256 minDeposit);
 
     error InsufficientMintableAmount(uint256 mintableAmount);
 

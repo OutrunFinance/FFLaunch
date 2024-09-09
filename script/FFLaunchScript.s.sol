@@ -24,8 +24,7 @@ contract FFLaunchScript is BaseScript {
             owner,
             vm.envAddress("UBNB"),
             router,
-            factory,
-            1e17
+            factory
         ));
 
         console.log("UBNBFFLauncher deployed on %s", UBNBFFLauncherAddress);

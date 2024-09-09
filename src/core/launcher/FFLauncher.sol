@@ -27,20 +27,17 @@ contract FFLauncher is IFFLauncher, Ownable, AutoIncrementId {
     address public immutable OUTRUN_AMM_ROUTER;
     address public immutable OUTRUN_AMM_FACTORY;
 
-    uint256 public minDeposit;
     mapping(uint256 poolId => LaunchPool) public launchPools;
 
     constructor(
         address _owner,
         address _upt,
         address _outrunAMMRouter,
-        address _outrunAMMFactory,
-        uint256 _minDeposit
+        address _outrunAMMFactory
     ) Ownable(_owner) {
         UPT = _upt;
         OUTRUN_AMM_ROUTER = _outrunAMMRouter;
         OUTRUN_AMM_FACTORY = _outrunAMMFactory;
-        minDeposit = _minDeposit;
 
         IERC20(_upt).approve(_outrunAMMRouter, type(uint256).max);
     }
@@ -50,16 +47,11 @@ contract FFLauncher is IFFLauncher, Ownable, AutoIncrementId {
         return pool.endTime + pool.lockupDays * DAY;
     }
 
-    function setMinDeposit(uint256 _minDeposit) external override onlyOwner {
-        minDeposit = _minDeposit;
-    }
-
     /**
      * @dev Deposit UPT and mint token
      * @param amountInUPT - Amount of UPT to deposit
      */
     function deposit(uint256 amountInUPT) external {
-        require(amountInUPT >= minDeposit, InsufficientDepositAmount(amountInUPT));
         address msgSender = msg.sender;
         IERC20(UPT).safeTransferFrom(msgSender, address(this), amountInUPT);
         LaunchPool storage pool = launchPools[id];
