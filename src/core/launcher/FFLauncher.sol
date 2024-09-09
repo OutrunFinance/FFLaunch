@@ -197,6 +197,7 @@ contract FFLauncher is IFFLauncher, Ownable, AutoIncrementId {
             timeLockVault != address(0) &&
             startTime > currentTime && 
             endTime > currentTime && 
+            endTime > startTime &&
             sharePercent > 0 && 
             sharePercent <= RATIO, 
             InvalidRegisterInfo()
