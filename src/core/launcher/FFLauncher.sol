@@ -1,91 +1,77 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.26;
 
-import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./interfaces/IFFLauncher.sol";
 import "../utils/AutoIncrementId.sol";
-import "../external/OutrunAMMLibrary.sol";
-import "../external/IOutrunAMMRouter.sol";
-import "../external/IOutrunAMMPair.sol";
-import "../external/IListaStakeManager.sol";
-import "../external/INativeYieldTokenStakeManager.sol";
-import "../generator/ITokenGenerator.sol";
 import "../token/FFLiquidProof.sol";
 import "../token/interfaces/IFFERC20.sol";
 import "../token/interfaces/IFFLiquidProof.sol";
+import "../generator/ITokenGenerator.sol";
+import "../../external/IOutrunAMMPair.sol";
+import "../../external/IOutrunAMMRouter.sol";
+import "../../external/OutrunAMMLibrary.sol";
 
 /**
- * @title ListaBnbFFLauncher
+ * @title FFLauncher
  */
-contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
+contract FFLauncher is IFFLauncher, Ownable, AutoIncrementId {
     using SafeERC20 for IERC20;
 
     uint256 public constant DAY = 24 * 3600;
     uint256 public constant RATIO = 10000;
-    address public immutable SLISBNB;
-    address public immutable OSLISBNB;
-    address public immutable LISTA_STAKE_MANAGER;
-    address public immutable LISTA_BNB_STAKE_MANAGER;
+    address public immutable UPT;
     address public immutable OUTRUN_AMM_ROUTER;
     address public immutable OUTRUN_AMM_FACTORY;
 
-    uint256 private _minDeposit;
-    mapping(uint256 poolId => LaunchPool) private _launchPools;
+    uint256 public minDeposit;
+    mapping(uint256 poolId => LaunchPool) public launchPools;
 
     constructor(
         address _owner,
-        address _slisBNB,
-        address _oslisBNB,
+        address _upt,
         address _outrunAMMRouter,
         address _outrunAMMFactory,
-        address _listaStakeManager,
-        address _listaBNBStakeManager,
-        uint256 minDeposit_
+        uint256 _minDeposit
     ) Ownable(_owner) {
-        SLISBNB = _slisBNB;
-        OSLISBNB = _oslisBNB;
+        UPT = _upt;
         OUTRUN_AMM_ROUTER = _outrunAMMRouter;
         OUTRUN_AMM_FACTORY = _outrunAMMFactory;
-        LISTA_STAKE_MANAGER = _listaStakeManager;
-        LISTA_BNB_STAKE_MANAGER = _listaBNBStakeManager;
-        _minDeposit = minDeposit_;
+        minDeposit = _minDeposit;
 
-        IERC20(OSLISBNB).approve(_outrunAMMRouter, type(uint256).max);
-        IERC20(SLISBNB).approve(_listaBNBStakeManager, type(uint256).max);
+        IERC20(_upt).approve(_outrunAMMRouter, type(uint256).max);
     }
 
-    function minDeposit() external view override returns (uint256) {
-        return _minDeposit;
+    function getPoolUnlockTime(uint256 poolId) external view override returns (uint256) {
+        LaunchPool storage pool = launchPools[poolId];
+        return pool.endTime + pool.lockupDays * DAY;
     }
 
-    function launchPools(uint256 poolId) external view override returns (LaunchPool memory) {
-        return _launchPools[poolId];
+    function setMinDeposit(uint256 _minDeposit) external override onlyOwner {
+        minDeposit = _minDeposit;
     }
 
-    function setMinDeposit(uint256 minDeposit_) external override onlyOwner {
-        _minDeposit = minDeposit_;
-    }
-
-    function _stakeAndMint(uint256 poolId, uint256 slisBNBAmount) internal {
-        LaunchPool storage pool = _launchPools[poolId];
-        uint256 currentTime = block.timestamp;
-        uint64 startTime = pool.startTime;
-        uint64 endTime = pool.endTime;
-        uint128 lockupDays = pool.lockupDays;
-        require(currentTime > startTime && currentTime < endTime, NotDepositStage(startTime, endTime));
-
-        // stake native yield token
+    /**
+     * @dev Deposit UPT and mint token
+     * @param amountInUPT - Amount of UPT to deposit
+     */
+    function deposit(uint256 amountInUPT) external {
+        require(amountInUPT >= minDeposit, InsufficientDepositAmount(amountInUPT));
         address msgSender = msg.sender;
-        (uint256 amountInPT,) = INativeYieldTokenStakeManager(LISTA_BNB_STAKE_MANAGER).stake(slisBNBAmount, lockupDays, msgSender, address(this), msgSender);
+        IERC20(UPT).safeTransferFrom(msgSender, address(this), amountInUPT);
+        LaunchPool storage pool = launchPools[id];
+        uint256 currentTime = block.timestamp;
+        uint128 startTime = pool.startTime;
+        uint128 endTime = pool.endTime;
+        require(currentTime > startTime && currentTime < endTime, NotDepositStage(startTime, endTime));
 
         // Calling the registered tokenGenerator contract to get liquidity token and mint token to user
         address generator = pool.generator;
-        uint256 investorTokenAmount = ITokenGenerator(generator).generateInvestorToken(amountInPT, msgSender);
-        uint256 liquidityTokenAmount = ITokenGenerator(generator).generateLiquidityToken(amountInPT);
+        uint256 investorTokenAmount = ITokenGenerator(generator).generateInvestorToken(amountInUPT, msgSender);
+        uint256 liquidityTokenAmount = ITokenGenerator(generator).generateLiquidityToken(amountInUPT);
 
         unchecked {
             uint256 mintedAmount = pool.mintedAmount + liquidityTokenAmount + investorTokenAmount;
@@ -96,7 +82,6 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
                 uint256 mintableAmount = totalSupply * pool.sharePercent / RATIO;
                 require(mintedAmount <= mintableAmount, InsufficientMintableAmount(mintableAmount));
             }
-            pool.totalLiquidityFund += amountInPT;
             pool.mintedAmount = mintedAmount;
         }
 
@@ -104,40 +89,18 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
         address router = OUTRUN_AMM_ROUTER;
         IERC20(token).approve(router, liquidityTokenAmount);
         (,, uint256 liquidity) = IOutrunAMMRouter(router).addLiquidity(
-            OSLISBNB,
+            UPT,
             token,
-            amountInPT,
+            amountInUPT,
             liquidityTokenAmount,
-            amountInPT,
+            amountInUPT,
             liquidityTokenAmount,
             address(this),
             block.timestamp + 600
         );
         IFFLiquidProof(pool.liquidProof).mint(msgSender, liquidity);
             
-        emit StakeAndMint(poolId, msgSender, amountInPT, investorTokenAmount, liquidityTokenAmount, liquidity);
-    }
-
-    /**
-     * @dev Deposit BNB and mint token
-     */
-    function depositFromNativeToken() external payable override{
-        uint256 msgValue = msg.value;
-        require(msgValue >= _minDeposit, InsufficientDepositAmount(msgValue));
-        IListaStakeManager(LISTA_STAKE_MANAGER).deposit{value: msgValue}();
-
-        _stakeAndMint(id, IERC20(SLISBNB).balanceOf(address(this)));
-    }
-
-    /**
-     * @dev Deposit slisBNB and mint token
-     * @param slisBNBAmount - Amount of slisBNB to deposit
-     */
-    function deposit(uint256 slisBNBAmount) external override {
-        require(slisBNBAmount >= _minDeposit, InsufficientDepositAmount(_minDeposit));
-        IERC20(SLISBNB).safeTransferFrom(msg.sender, address(this), slisBNBAmount);
-
-        _stakeAndMint(id, slisBNBAmount);
+        emit Deposit(id, msgSender, amountInUPT, investorTokenAmount, liquidityTokenAmount, liquidity);
     }
 
     /**
@@ -145,7 +108,7 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
      * @param poolId - LaunchPool id
      */
     function enablePoolTokenTransfer(uint256 poolId) external override {
-        LaunchPool storage pool = _launchPools[poolId];
+        LaunchPool storage pool = launchPools[poolId];
         address token = pool.token;
         uint256 endTime = pool.endTime;
         require(block.timestamp >= endTime, NotLiquidityLockStage(endTime));
@@ -153,43 +116,43 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
     }
 
     /**
-     * @dev Claim your liquidity by pooId when liquidity unlocked
+     * @dev Redeem your liquidity by pooId when liquidity unlocked
      * @param poolId - LaunchPool id
-     * @param claimedLiquidity - Claimed liquidity
+     * @param liquidity - Claimed liquidity
      */
-    function claimPoolLiquidity(uint256 poolId, uint256 claimedLiquidity) external override {
+    function redeemLiquidity(uint256 poolId, uint256 liquidity) external override {
         address msgSender = msg.sender;
-        LaunchPool storage pool = _launchPools[poolId];
+        LaunchPool storage pool = launchPools[poolId];
         uint256 unlockTime = pool.endTime + pool.lockupDays * DAY;
         require(block.timestamp >= unlockTime, NotLiquidityUnlockStage(unlockTime));
-        IFFLiquidProof(pool.liquidProof).burn(msgSender, claimedLiquidity);
+        IFFLiquidProof(pool.liquidProof).burn(msgSender, liquidity);
 
-        address pair = OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, OSLISBNB, pool.token);
-        IERC20(pair).safeTransfer(msgSender, claimedLiquidity);
+        address pair = OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, UPT, pool.token);
+        IERC20(pair).safeTransfer(msgSender, liquidity);
 
-        emit ClaimPoolLiquidity(poolId, msgSender, claimedLiquidity);
+        emit RedeemLiquidity(poolId, msgSender, liquidity);
     }
 
     /**
-     * @dev Claim transaction fees of liquidity pool
+     * @dev Claim trade fees of liquidity pool
      * @param poolId - LaunchPool id
-     * @param receiver - Address to receive transaction fees
+     * @param receiver - Address to receive trade fees
      */
-    function claimTransactionFees(uint256 poolId, address receiver) external override {
+    function claimTradeFees(uint256 poolId, address receiver) external override {
         require(receiver != address(0), ZeroAddress());
         address msgSender = msg.sender;
-        LaunchPool storage pool = _launchPools[poolId];
+        LaunchPool storage pool = launchPools[poolId];
         require(msgSender == pool.generator, PermissionDenied());
         uint256 endTime = pool.endTime;
         require(block.timestamp > endTime, NotLiquidityLockStage(endTime));
 
-        address pairAddress = OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, OSLISBNB, pool.token);
+        address pairAddress = OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, UPT, pool.token);
         IOutrunAMMPair pair = IOutrunAMMPair(pairAddress);
         (uint256 amount0, uint256 amount1) = pair.claimMakerFee();
         IERC20(pair.token0()).safeTransfer(receiver, amount0);
         IERC20(pair.token1()).safeTransfer(receiver, amount1);
 
-        emit ClaimTransactionFees(poolId, receiver, amount0, amount1);
+        emit ClaimTradeFees(poolId, receiver, amount0, amount1);
     }
 
     /**
@@ -198,7 +161,7 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
      * @notice Only generator can call, only can call once
      */
     function generateRemainingTokens(uint256 poolId) external override returns (uint256 remainingTokenAmount) {
-        LaunchPool storage pool = _launchPools[poolId];
+        LaunchPool storage pool = launchPools[poolId];
         uint256 sharePercent = pool.sharePercent;
         require(sharePercent < RATIO, InitialFullCirculation());
         require(!pool.areAllGenerated,  AlreadyGenerated());
@@ -232,8 +195,8 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
         uint256 currentTime = block.timestamp;
         address token = poolParam.token;
         address timeLockVault = poolParam.timeLockVault;
-        uint64 startTime = poolParam.startTime;
-        uint64 endTime = poolParam.endTime;
+        uint128 startTime = poolParam.startTime;
+        uint128 endTime = poolParam.endTime;
         uint256 sharePercent = poolParam.sharePercent;
         require(
             token != address(0) && 
@@ -251,7 +214,7 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
 
         uint256 currentPoolId = id;
         if (currentPoolId != 0) {
-            require(currentTime > _launchPools[currentPoolId].endTime, LastPoolNotEnd());
+            require(currentTime > launchPools[currentPoolId].endTime, LastPoolNotEnd());
         }
 
         FFLiquidProof liquidProof = new FFLiquidProof(
@@ -264,7 +227,6 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
             generator,
             address(liquidProof),
             timeLockVault,
-            0,
             startTime,
             endTime,
             poolParam.lockupDays,
@@ -274,7 +236,7 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
             false
         );
         poolId = nextId();
-        _launchPools[poolId] = pool;
+        launchPools[poolId] = pool;
 
         emit RegisterPool(poolId, pool);
     }
@@ -287,7 +249,7 @@ contract ListaBnbFFLauncher is IFFLauncher, Ownable, AutoIncrementId {
      * @notice The address can only be updated after the TimeLockVault contract is reviewed by the Outrun audit team.
      */
     function updateTimeLockVault(uint256 poolId, address token, address timeLockVault) external override onlyOwner {
-        LaunchPool storage pool = _launchPools[poolId];
+        LaunchPool storage pool = launchPools[poolId];
         address poolToken = pool.token;
         require(poolToken == token, TokenMismatch(poolToken));
         uint256 unlockTime = pool.endTime + pool.lockupDays * DAY;

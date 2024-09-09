@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.26;
 
 /**
@@ -10,31 +10,26 @@ interface IFFLauncher {
         address generator;              // Token generator address
         address liquidProof;            // Liquid proof token address
         address timeLockVault;          // Remaining tokens time lock vault
-        uint256 totalLiquidityFund;     // Funds(PT) actually added to the liquidity pool.
-        uint64 startTime;              // StartTime of launchPool
-        uint64 endTime;                // EndTime of launchPool
-        uint128 lockupDays;             // LockupDay of liquidity
+        uint128 startTime;              // StartTime of launchPool
+        uint128 endTime;                // EndTime of launchPool
+        uint256 lockupDays;             // LockupDay of liquidity
         uint256 totalSupply;            // Token totalSupply, if 0, indicates unlimited mintable tokens.
         uint256 sharePercent;           // Percentage of totalSupply that can be minted by LaunchPool, if 100%, indicates can't generate remaining tokens.
         uint256 mintedAmount;           // Amount of minted tokens by LaunchPool, including tokens in the liquidity pool.
         bool areAllGenerated;           // Are all tokens generated?
     }
 
-    function minDeposit() external view returns (uint256);
-
-    function launchPools(uint256 poolId) external view returns (LaunchPool memory);
+    function getPoolUnlockTime(uint256 poolId) external view returns (uint256);
 
     function setMinDeposit(uint256 minDeposit) external;
 
-    function depositFromNativeToken() external payable;
-
-    function deposit(uint256 nativeYieldTokenAmount) external;
+    function deposit(uint256 amountInUPT) external;
 
     function enablePoolTokenTransfer(uint256 poolId) external;
 
-    function claimPoolLiquidity(uint256 poolId, uint256 burnedLiquidity) external;
+    function redeemLiquidity(uint256 poolId, uint256 liquidity) external;
 
-    function claimTransactionFees(uint256 poolId, address receiver) external;
+    function claimTradeFees(uint256 poolId, address receiver) external;
 
     function generateRemainingTokens(uint256 poolId) external returns (uint256 remainingTokenAmount);
 
@@ -74,18 +69,18 @@ interface IFFLauncher {
     error NotDepositStage(uint256 startTime, uint256 endTime);
 
 
-    event StakeAndMint(
+    event Deposit(
         uint256 indexed poolId, 
         address indexed account, 
-        uint256 ptFund, 
+        uint256 amountInUPT, 
         uint256 investorTokenAmount, 
         uint256 liquidityTokenAmount, 
         uint256 liquidity
     );
 
-    event ClaimPoolLiquidity(uint256 indexed poolId, address indexed account, uint256 lpAmount);
+    event RedeemLiquidity(uint256 indexed poolId, address indexed account, uint256 liquidity);
 
-    event ClaimTransactionFees(uint256 indexed poolId, address to, uint256 amount0, uint256 amount1);
+    event ClaimTradeFees(uint256 indexed poolId, address to, uint256 amount0, uint256 amount1);
 
     event GenerateRemainingTokens(uint256 indexed poolId, address token, address timeLockVault, uint256 remainingTokenAmount);
 

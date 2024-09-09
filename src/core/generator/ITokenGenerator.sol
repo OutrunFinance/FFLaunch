@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.26;
 
 /**
@@ -36,10 +36,10 @@ interface ITokenGenerator {
     function generateRemainingTokens(uint256 poolId) external returns (uint256 remainingTokenAmount);
 
     /**
-     * @dev Claim transaction fees through FFLauncher
-     * @param receiver - Address to receive transaction fees
+     * @dev Claim trade fees through FFLauncher
+     * @param receiver - Address to receive trade fees
      */
-    function claimTransactionFees(uint256 poolId, address receiver) external;
+    function claimTradeFees(uint256 poolId, address receiver) external;
 
     error PermissionDenied();
 }

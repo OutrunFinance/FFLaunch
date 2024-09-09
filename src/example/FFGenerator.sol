@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -96,10 +96,10 @@ contract FFGenerator is ITokenGenerator, Ownable, Initializable {
     }
 
     /**
-     * @dev Claim transaction fees through FFLauncher
-     * @param receiver - Address to receive transaction fees
+     * @dev Claim trade fees through FFLauncher
+     * @param receiver - Address to receive trade fees
      */
-    function claimTransactionFees(uint256 poolId, address receiver) external override onlyOwner {
-        IFFLauncher(LAUNCHER).claimTransactionFees(poolId, receiver);
+    function claimTradeFees(uint256 poolId, address receiver) external override onlyOwner {
+        IFFLauncher(LAUNCHER).claimTradeFees(poolId, receiver);
     }
 }
