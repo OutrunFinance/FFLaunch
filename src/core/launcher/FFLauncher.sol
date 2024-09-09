@@ -141,10 +141,12 @@ contract FFLauncher is IFFLauncher, Ownable, AutoIncrementId {
         address pairAddress = OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, UPT, pool.token);
         IOutrunAMMPair pair = IOutrunAMMPair(pairAddress);
         (uint256 amount0, uint256 amount1) = pair.claimMakerFee();
-        IERC20(pair.token0()).safeTransfer(receiver, amount0);
-        IERC20(pair.token1()).safeTransfer(receiver, amount1);
+        address token0 = pair.token0();
+        address token1 = pair.token1();
+        IERC20(token0).safeTransfer(receiver, amount0);
+        IERC20(token1).safeTransfer(receiver, amount1);
 
-        emit ClaimTradeFees(poolId, receiver, amount0, amount1);
+        emit ClaimTradeFees(poolId, receiver, token0, amount0, token1, amount1);
     }
 
     /**
