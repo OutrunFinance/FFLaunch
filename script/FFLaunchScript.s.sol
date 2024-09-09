@@ -2,33 +2,32 @@
 pragma solidity ^0.8.24;
 
 import "./BaseScript.s.sol";
-import "../src/core/launcher/ListaBnbFFLauncher.sol";
+import "../src/core/launcher/FFLauncher.sol";
 
 contract FFLaunchScript is BaseScript {
     address internal owner;
-    address internal factory;
     address internal router;
+    address internal factory;
+    address internal UBNB;
 
     function run() public broadcaster {
         owner = vm.envAddress("OWNER");
         router = vm.envAddress("OUTRUN_AMM_ROUTER");
         factory = vm.envAddress("OUTRUN_AMM_FACTORY");
+        UBNB = vm.envAddress("UBNB");
 
-        _deployListaBNBLauncher();
+        _deployUBNBFFLauncher();
     }
 
-    function _deployListaBNBLauncher() internal {
-        address launcherAddress = address(new ListaBnbFFLauncher(
+    function _deployUBNBFFLauncher() internal {
+        address UBNBFFLauncherAddress = address(new FFLauncher(
             owner,
-            vm.envAddress("SLISBNB"),
-            vm.envAddress("OSLISBNB"),
+            vm.envAddress("UBNB"),
             router,
             factory,
-            vm.envAddress("LISTA_STAKE_MANAGER"),
-            vm.envAddress("LISTA_BNB_STAKE_MANAGER"),
-            10**17
+            1e17
         ));
 
-        console.log("ListaBnbFFLauncher deployed on %s", launcherAddress);
+        console.log("UBNBFFLauncher deployed on %s", UBNBFFLauncherAddress);
     }
 }

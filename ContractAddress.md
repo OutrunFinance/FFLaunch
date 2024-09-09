@@ -1,3 +1,7 @@
+## BSC Testnet
+
+UBNBFFLauncher: 0x964625A63b1aE991553434a1E16708611b45b76F  
+
 ## Blast Sepolia
 
 EthFFLauncher: 0x8534c4cDC0E249de450C29b2ABA34Bd58bA0BCeb  
