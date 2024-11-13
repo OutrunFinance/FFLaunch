@@ -53,7 +53,7 @@ interface IFFLauncher {
 
     function redeemLiquidity(uint256 poolId, uint256 proofTokenAmount) external;
 
-    function redeemMakerFees(uint256 poolId, address receiver) external returns (uint256 UPTFee, uint256 tokenFee);
+    function redeemMakerFees(uint256 poolId) external;
 
     function generateRemainingTokens(uint256 poolId) external returns (uint256 remainingTokenAmount);
 
@@ -61,8 +61,9 @@ interface IFFLauncher {
 
     function updateTimeLockVault(uint256 poolId, address token, address timeLockVault) external;
 
+    function setRevenuePool(address revenuePool) external;
 
-    error ZeroAddress();
+    error ZeroInput();
 
     error LastPoolNotEnd();
 
@@ -117,6 +118,13 @@ interface IFFLauncher {
         address indexed receiver, 
         uint256 UPTFee, 
         uint256 tokenFee
+    );
+
+    event RedeemProtocolFees(
+        uint256 indexed poolId, 
+        address indexed revenuePool, 
+        uint256 UPTProtocolFee, 
+        uint256 liquidProofProtocolFee
     );
 
     event GenerateRemainingTokens(uint256 indexed poolId, address token, address timeLockVault, uint256 remainingTokenAmount);

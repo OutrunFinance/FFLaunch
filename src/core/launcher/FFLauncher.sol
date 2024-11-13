@@ -29,6 +29,8 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
     address public immutable OUTRUN_AMM_ROUTER;
     address public immutable OUTRUN_AMM_FACTORY;
 
+    address public revenuePool;
+
     mapping(uint256 poolId => LaunchPool) public launchPools;
     mapping(uint256 poolId => uint256) public claimableLiquidProofs;
     mapping(uint256 poolId => GenesisFund) public genesisFunds;
@@ -38,12 +40,14 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
     constructor(
         address _owner,
         address _UPT,
+        address _revenuePool,
         address _outrunAMMRouter,
         address _outrunAMMFactory
     ) Ownable(_owner) {
         UPT = _UPT;
         OUTRUN_AMM_ROUTER = _outrunAMMRouter;
         OUTRUN_AMM_FACTORY = _outrunAMMFactory;
+        revenuePool = _revenuePool;
 
         _safeApproveInf(_UPT, _outrunAMMRouter);
     }
@@ -238,10 +242,8 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
     /**
      * @dev Claim maker fees of liquidity pool
      * @param poolId - LaunchPool id
-     * @param receiver - Address to receive trade fees
      */
-    function redeemMakerFees(uint256 poolId, address receiver) external override returns (uint256 UPTFee, uint256 tokenFee) {
-        require(receiver != address(0), ZeroAddress());
+    function redeemMakerFees(uint256 poolId) external override {
         address msgSender = msg.sender;
         LaunchPool storage pool = launchPools[poolId];
         require(msgSender == pool.generator, PermissionDenied());
@@ -249,18 +251,31 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
         require(currentStage == Stage.Locked, NotLockedStage(currentStage));
 
         address token = pool.token;
-        IOutrunAMMPair pair = IOutrunAMMPair(OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, token, UPT, SWAP_FEERATE));
+        IOutrunAMMPair tokenPair = IOutrunAMMPair(OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, token, UPT, SWAP_FEERATE));
+        (uint256 amount0, uint256 amount1) = tokenPair.claimMakerFee();
+        if (amount0 != 0 && amount1 != 0) {
+            address token0 = tokenPair.token0();
+            uint256 UPTFee = token0 == UPT ? amount0 : amount1;
+            uint256 tokenFee = token0 == token ? amount0 : amount1;
+            address receiver = ITokenGenerator(pool.generator).fundReceiver();
+            _transferOut(token, receiver, tokenFee);
+            _transferOut(UPT, receiver, UPTFee);
 
-        (uint256 amount0, uint256 amount1) = pair.claimMakerFee();
-        if (amount0 == 0 && amount1 == 0) return (0, 0);
+            emit RedeemMakerFees(poolId, receiver, UPTFee, tokenFee);
+        }
+        
+        address liquidProof = pool.liquidProof;
+        IOutrunAMMPair liquidProofPair = IOutrunAMMPair(OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, liquidProof, UPT, SWAP_FEERATE));
+        (uint256 amount2, uint256 amount3) = liquidProofPair.claimMakerFee();
+        if (amount2 != 0 && amount3 != 0) {
+            address token2 = tokenPair.token0();
+            uint256 UPTProtocolFee = token2 == UPT ? amount2 : amount3;
+            uint256 liquidProofProtocolFee = token2 == liquidProof ? amount2 : amount3;
+            _transferOut(UPT, revenuePool, UPTProtocolFee);
+            _transferOut(token, revenuePool, liquidProofProtocolFee);
 
-        address token0 = pair.token0();
-        UPTFee = token0 == UPT ? amount0 : amount1;
-        tokenFee = token0 == token ? amount0 : amount1;
-        _transferOut(token, receiver, tokenFee);
-        _transferOut(UPT, receiver, UPTFee);
-
-        emit RedeemMakerFees(poolId, receiver, UPTFee, tokenFee);
+            emit RedeemProtocolFees(poolId, revenuePool, UPTProtocolFee, liquidProofProtocolFee);
+        }
     }
 
     /**
@@ -366,5 +381,15 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
         pool.timeLockVault = timeLockVault;
 
         emit UpdateTimeLockVault(poolId, timeLockVault);
+    }
+
+    /**
+     * @dev Set revenuePool
+     * @param _revenuePool - Revenue verse address
+     */
+    function setRevenuePool(address _revenuePool) external override onlyOwner {
+        require(_revenuePool != address(0), ZeroInput());
+
+        revenuePool = _revenuePool;
     }
 }
