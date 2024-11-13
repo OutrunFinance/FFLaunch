@@ -16,6 +16,11 @@ interface ITokenGenerator {
     function launcher() external view returns (address);
 
     /**
+     * @dev Fund receiver address
+     */
+    function fundReceiver() external view returns (address);
+
+    /**
      * @dev Generate the tokens to be added to the liquidity pool
      * @param liquidityFundAmount - Amount of liquidity fund
      */
@@ -28,10 +33,10 @@ interface ITokenGenerator {
     function generateRemainingTokens(uint256 poolId) external returns (uint256 remainingTokenAmount);
 
     /**
-     * @dev Redeem maker fees through FFLauncher
-     * @param receiver - Address to receive Maker fees
+     * @dev Set fund receiver
+     * @param fundReceiver - Address to receive maker fees
      */
-    function redeemMakerFees(uint256 poolId, address receiver) external;
+    function setFundReceiver(address fundReceiver) external;
 
     error PermissionDenied();
 }

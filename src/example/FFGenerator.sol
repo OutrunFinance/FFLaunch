@@ -15,19 +15,17 @@ contract FFGenerator is ITokenGenerator, Ownable, Initializable {
     address public immutable LAUNCHER;
     uint256 public constant FUND_BASED_AMOUNT = 10000;
 
-    address private _token;
+    address public token;
+    address public fundReceiver;
 
     modifier onlyLauncher() {
         require(msg.sender == LAUNCHER, PermissionDenied());
         _;
     }
 
-    constructor(address _owner, address _launcher) Ownable(_owner) {
+    constructor(address _owner, address _launcher, address _fundReceiver) Ownable(_owner) {
         LAUNCHER = _launcher;
-    }
-
-    function token() external view override returns (address) {
-        return _token;
+        fundReceiver = _fundReceiver;
     }
 
     function launcher() external view override returns (address) {
@@ -35,7 +33,7 @@ contract FFGenerator is ITokenGenerator, Ownable, Initializable {
     }
 
     function initialize(address tokenAddress) external initializer onlyOwner {
-        _token = tokenAddress;
+        token = tokenAddress;
     } 
 
     /**
@@ -44,7 +42,7 @@ contract FFGenerator is ITokenGenerator, Ownable, Initializable {
      */
     function generateLiquidityTokens(uint256 liquidityFundAmount) external override onlyLauncher returns (uint256 liquidityTokenAmount) {
         liquidityTokenAmount = liquidityFundAmount * FUND_BASED_AMOUNT;
-        IFFERC20(_token).mint(LAUNCHER, liquidityTokenAmount);
+        IFFERC20(token).mint(LAUNCHER, liquidityTokenAmount);
     }
 
     /**
@@ -55,10 +53,10 @@ contract FFGenerator is ITokenGenerator, Ownable, Initializable {
     }
 
     /**
-     * @dev Redeem maker fees through FFLauncher
-     * @param receiver - Address to receive maker fees
+     * @dev Set fund receiver
+     * @param _fundReceiver - Address to receive maker fees
      */
-    function redeemMakerFees(uint256 poolId, address receiver) external override onlyOwner {
-        IFFLauncher(LAUNCHER).redeemMakerFees(poolId, receiver);
+    function setFundReceiver(address _fundReceiver) external override onlyOwner {
+        fundReceiver = _fundReceiver;
     }
 }

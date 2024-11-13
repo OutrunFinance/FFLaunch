@@ -11,10 +11,12 @@ contract ExampleScript is BaseScript {
     function run() public broadcaster {
         address owner = vm.envAddress("OWNER");
         address launcher = vm.envAddress("LISTA_BNB_FFLAUNCHER");
+        address fundReceiver = vm.envAddress("FUND_RECEIVER");
 
         FFGenerator generator = new FFGenerator(
             owner,
-            launcher
+            launcher,
+            fundReceiver
         );
         address generatorAddress = address(generator);
         FF ff = new FF(generatorAddress);
