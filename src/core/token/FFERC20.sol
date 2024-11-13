@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.26;
 
-import "./interfaces/IFFERC20.sol";
+import {IFFERC20} from "./interfaces/IFFERC20.sol";
 
 /**
  * @title Fair and Free ERC20 Standard

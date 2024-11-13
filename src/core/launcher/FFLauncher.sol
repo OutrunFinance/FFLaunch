@@ -5,16 +5,16 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "./interfaces/IFFLauncher.sol";
-import "../token/FFLiquidProof.sol";
-import "../token/interfaces/IFFERC20.sol";
-import "../token/interfaces/IFFLiquidProof.sol";
-import "../generator/ITokenGenerator.sol";
-import "../libraries/AutoIncrementId.sol";
-import "../libraries/TokenHelper.sol";
-import "../libraries/IOutrunAMMPair.sol";
-import "../libraries/IOutrunAMMRouter.sol";
-import "../libraries/OutrunAMMLibrary.sol";
+import {IFFLauncher} from "./interfaces/IFFLauncher.sol";
+import {FFLiquidProof} from "../token/FFLiquidProof.sol";
+import {IFFERC20} from "../token/interfaces/IFFERC20.sol";
+import {IFFLiquidProof} from "../token/interfaces/IFFLiquidProof.sol";
+import {ITokenGenerator} from "../generator/ITokenGenerator.sol";
+import {AutoIncrementId} from "../libraries/AutoIncrementId.sol";
+import {TokenHelper} from "../libraries/TokenHelper.sol";
+import {IOutrunAMMPair} from "../libraries/IOutrunAMMPair.sol";
+import {IOutrunAMMRouter} from "../libraries/IOutrunAMMRouter.sol";
+import {OutrunAMMLibrary} from "../libraries/OutrunAMMLibrary.sol";
 
 /**
  * @title FFLauncher
@@ -313,7 +313,7 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
      * @param poolParam - Pool param
      * @notice The tokenGenerator code should be kept as concise as possible and undergo auditing to prevent malicious behavior.
      */
-    function registerPool(LaunchPool calldata poolParam) external override onlyOwner returns (uint256 poolId) {
+    function registerPool(LaunchPool calldata poolParam) external virtual override onlyOwner returns (uint256 poolId) {
         uint256 currentTime = block.timestamp;
         address token = poolParam.token;
         address timeLockVault = poolParam.timeLockVault;

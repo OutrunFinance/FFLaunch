@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.26;
 
-import "../core/token/FFERC20.sol";
+import {FFERC20} from "../core/token/FFERC20.sol";
 
 /**
  * @title FF Token 

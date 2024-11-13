@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.26;
 
-import "./interfaces/IFFLiquidProof.sol";
+import {IFFLiquidProof} from "./interfaces/IFFLiquidProof.sol";
 
 /**
  * @title FFLaunch Liquid Proof Token

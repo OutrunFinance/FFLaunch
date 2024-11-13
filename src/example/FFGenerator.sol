@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.26;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../core/generator/ITokenGenerator.sol";
-import "../core/libraries/Initializable.sol";
-import "../core/token/interfaces/IFFERC20.sol";
-import "../core/launcher/interfaces/IFFLauncher.sol";
+import {ITokenGenerator} from "../core/generator/ITokenGenerator.sol";
+import {Initializable} from "../core/libraries/Initializable.sol";
+import {IFFERC20} from "../core/token/interfaces/IFFERC20.sol";
+import {IFFLauncher} from "../core/launcher/interfaces/IFFLauncher.sol";
 
 /**
  * @dev example - $FF generator
