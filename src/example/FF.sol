@@ -7,5 +7,5 @@ import "../core/token/FFERC20.sol";
  * @title FF Token 
  */
 contract FF is FFERC20 {
-    constructor(address _launcher, address _generator) FFERC20("Fair&Free", "FF", _launcher, _generator) {}
+    constructor(address _generator) FFERC20("Fair&Free", "FF", 18, _generator) {}
 }

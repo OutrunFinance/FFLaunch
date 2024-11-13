@@ -12,15 +12,12 @@ contract ExampleScript is BaseScript {
         address owner = vm.envAddress("OWNER");
         address launcher = vm.envAddress("LISTA_BNB_FFLAUNCHER");
 
-        uint256 currentTime = block.timestamp;
         FFGenerator generator = new FFGenerator(
             owner,
-            launcher,
-            currentTime + 3 * DAY,
-            currentTime + 6 * DAY
+            launcher
         );
         address generatorAddress = address(generator);
-        FF ff = new FF(launcher, generatorAddress);
+        FF ff = new FF(generatorAddress);
         address ffAddress = address(ff);
         generator.initialize(ffAddress);
 

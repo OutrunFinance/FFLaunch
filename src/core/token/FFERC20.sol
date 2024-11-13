@@ -4,132 +4,93 @@ pragma solidity ^0.8.26;
 import "./interfaces/IFFERC20.sol";
 
 /**
- * @title Fair&Free ERC20 Standard
+ * @title Fair and Free ERC20 Standard
  */
 abstract contract FFERC20 is IFFERC20 {
-    string private _name;
-    string private _symbol;
-    uint8 private _decimals;
-    uint256 private _totalSupply;
-    address private _launcher;
-    address private _generator;
-    bool private _isTransferable;
+    string public name;
+    string public symbol;
+    uint8 public decimals;
+    uint256 public totalSupply;
+    address public generator;
 
-    mapping(address account => uint256) private _balances;
-    mapping(address account => mapping(address spender => uint256)) private _allowances;
+    mapping(address account => uint256) public balances;
+    mapping(address account => mapping(address spender => uint256)) public allowances;
 
-    constructor(string memory name_, string memory symbol_, address launcher_, address generator_) {
-        _name = name_;
-        _symbol = symbol_;
-        _launcher = launcher_;
-        _generator = generator_;
+    constructor(
+        string memory _name, 
+        string memory _symbol, 
+        uint8 _decimals,
+        address _generator
+    ) {
+        name = _name;
+        symbol = _symbol;
+        decimals = _decimals;
+        generator = _generator;
     }
 
-    function _msgSender() internal view returns (address) {
-        return msg.sender;
+    function balanceOf(address account) external view override returns (uint256) {
+        return balances[account];
     }
 
-    function name() public view returns (string memory) {
-        return _name;
-    }
-
-    function symbol() public view returns (string memory) {
-        return _symbol;
-    }
-
-    function decimals() public pure returns (uint8) {
-        return 18;
-    }
-
-    function totalSupply() public view override returns (uint256) {
-        return _totalSupply;
-    }
-
-    function launcher() public view override returns (address) {
-        return _launcher;
-    }
-
-    function generator() public view override returns (address) {
-        return _generator;
-    }
-
-    function balanceOf(address account) public view override returns (uint256) {
-        return _balances[account];
-    }
-
-    function transferable() external view override returns (bool) {
-        return _isTransferable;
-    }
-
-    function allowance(address owner, address spender) public view override returns (uint256) {
-        return _allowances[owner][spender];
-    }
-
-    function enableTransfer() external override {
-        require(!_isTransferable, AlreadyEnableTransfer());
-        require(msg.sender == _launcher, PermissionDenied());
-        _isTransferable = true;
+    function allowance(address owner, address spender) external view override returns (uint256) {
+        return allowances[owner][spender];
     }
 
     function mint(address account, uint256 amount) external override {
-        require(msg.sender == _generator, PermissionDenied());
+        require(msg.sender == generator, PermissionDenied());
         _mint(account, amount);
     }
 
+    function burn(uint256 value) external override {
+        address burner = msg.sender;
+        require(balances[burner] >= value, InsufficientBalance());
+        _burn(burner, value);
+    }
+
     function transfer(address to, uint256 value) public override returns (bool) {
-        address owner = _msgSender();
+        address owner = msg.sender;
         _transfer(owner, to, value);
         return true;
     }
 
     function approve(address spender, uint256 value) public override returns (bool) {
-        address owner = _msgSender();
+        address owner = msg.sender;
         _approve(owner, spender, value);
         return true;
     }
 
     function transferFrom(address from, address to, uint256 value) public override returns (bool) {
-        address spender = _msgSender();
+        address spender = msg.sender;
         _spendAllowance(from, spender, value);
         _transfer(from, to, value);
         return true;
     }
 
     function _transfer(address from, address to, uint256 value) internal {
-        if (from == address(0)) {
-            revert ERC20InvalidSender(address(0));
-        }
-        if (to == address(0)) {
-            revert ERC20InvalidReceiver(address(0));
-        }
-
-        if (_isTransferable) {
-            _update(from, to, value);
-        } else {
-            revert TransferNotStart();
-        }
+        require(from != address(0), ERC20InvalidSender(address(0)));
+        require(to != address(0), ERC20InvalidReceiver(address(0)));
+        
+        _update(from, to, value);
     }
 
     function _update(address from, address to, uint256 value) internal {
         if (from == address(0)) {
-            _totalSupply += value;
+            totalSupply += value;
         } else {
-            uint256 fromBalance = _balances[from];
-            if (fromBalance < value) {
-                revert ERC20InsufficientBalance(from, fromBalance, value);
-            }
+            uint256 fromBalance = balances[from];
+            require(fromBalance >= value, ERC20InsufficientBalance(from, fromBalance, value));
             unchecked {
-                _balances[from] = fromBalance - value;
+                balances[from] = fromBalance - value;
             }
         }
 
         if (to == address(0)) {
             unchecked {
-                _totalSupply -= value;
+                totalSupply -= value;
             }
         } else {
             unchecked {
-                _balances[to] += value;
+                balances[to] += value;
             }
         }
 
@@ -137,23 +98,12 @@ abstract contract FFERC20 is IFFERC20 {
     }
 
     function _mint(address account, uint256 value) internal {
-        if (account == address(0)) {
-            revert ERC20InvalidReceiver(address(0));
-        }
+        require(account != address(0), ERC20InvalidReceiver(address(0)));
         _update(address(0), account, value);
     }
 
-    function burn(uint256 value) external returns (bool) {
-        address burner = _msgSender();
-        require(balanceOf(burner) >= value, InsufficientBalance());
-        _burn(burner, value);
-        return true;
-    }
-
     function _burn(address account, uint256 value) internal {
-        if (account == address(0)) {
-            revert ERC20InvalidSender(address(0));
-        }
+        require(account != address(0), ERC20InvalidSender(address(0)));
         _update(account, address(0), value);
     }
 
@@ -162,24 +112,19 @@ abstract contract FFERC20 is IFFERC20 {
     }
 
     function _approve(address owner, address spender, uint256 value, bool emitEvent) internal {
-        if (owner == address(0)) {
-            revert ERC20InvalidApprover(address(0));
-        }
-        if (spender == address(0)) {
-            revert ERC20InvalidSpender(address(0));
-        }
-        _allowances[owner][spender] = value;
+        require(owner != address(0), ERC20InvalidApprover(address(0)));
+        require(spender != address(0), ERC20InvalidSpender(address(0)));
+
+        allowances[owner][spender] = value;
         if (emitEvent) {
             emit Approval(owner, spender, value);
         }
     }
 
     function _spendAllowance(address owner, address spender, uint256 value) internal {
-        uint256 currentAllowance = allowance(owner, spender);
+        uint256 currentAllowance = allowances[owner][spender];
         if (currentAllowance != type(uint256).max) {
-            if (currentAllowance < value) {
-                revert ERC20InsufficientAllowance(spender, currentAllowance, value);
-            }
+            require(currentAllowance >= value, ERC20InsufficientAllowance(spender, currentAllowance, value));
             unchecked {
                 _approve(owner, spender, currentAllowance - value, false);
             }

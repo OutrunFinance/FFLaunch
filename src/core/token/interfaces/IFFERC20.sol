@@ -13,20 +13,14 @@ interface IFFERC20 is IERC20, IERC20Errors {
 
     function symbol() external view returns (string memory);
 
-    function launcher() external view returns (address);
-
     function generator() external view returns (address);
 
-    function transferable() external view returns (bool);
+    function mint(address account, uint256 amount) external;
 
-    function enableTransfer() external;
-
-    function mint(address _account, uint256 _amount) external;
+    function burn(uint256 value) external;
 
 
     error PermissionDenied();
 
     error InsufficientBalance();
-
-    error AlreadyEnableTransfer();
 }

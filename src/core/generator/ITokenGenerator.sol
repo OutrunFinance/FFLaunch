@@ -17,18 +17,10 @@ interface ITokenGenerator {
 
     /**
      * @dev Generate the tokens to be added to the liquidity pool
-     * @param deployFundAmount - Amount of deployed fund
+     * @param liquidityFundAmount - Amount of liquidity fund
      */
-    function generateLiquidityToken(uint256 deployFundAmount) external returns (uint256 liquidityTokenAmount);
-
-    /**
-     * @dev Generate the token when investor claim token
-     * @param deployFundAmount Amount of deployed fund
-     * @param receiver Investor address to receive the token
-     * @notice MUST only FFLauncher can call this function
-     */
-    function generateInvestorToken(uint256 deployFundAmount, address receiver) external returns (uint256 investorTokenAmount);
-
+    function generateLiquidityTokens(uint256 liquidityFundAmount) external returns (uint256 increasedTokenFund);
+    
     /**
      * @dev Generate remaining tokens after FFLaunch event
      * @param poolId Launch pool id
@@ -36,10 +28,10 @@ interface ITokenGenerator {
     function generateRemainingTokens(uint256 poolId) external returns (uint256 remainingTokenAmount);
 
     /**
-     * @dev Claim trade fees through FFLauncher
-     * @param receiver - Address to receive trade fees
+     * @dev Redeem maker fees through FFLauncher
+     * @param receiver - Address to receive Maker fees
      */
-    function claimTradeFees(uint256 poolId, address receiver) external;
+    function redeemMakerFees(uint256 poolId, address receiver) external;
 
     error PermissionDenied();
 }

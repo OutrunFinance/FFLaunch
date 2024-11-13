@@ -15,4 +15,4 @@ forge script FFLaunchScript.s.sol:FFLaunchScript --rpc-url bsc_testnet \
     --broadcast --ffi -vvvv \
     --verify 
 
-#forge script ExampleScript.s.sol:ExampleScript --rpc-url blast_sepolia --broadcast --verify --ffi -vvvv
+# forge script ExampleScript.s.sol:ExampleScript --rpc-url blast_sepolia --broadcast --verify --ffi -vvvv

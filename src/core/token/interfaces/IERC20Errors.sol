@@ -13,6 +13,4 @@ interface IERC20Errors {
     error ERC20InvalidApprover(address approver);
 
     error ERC20InvalidSpender(address spender);
-
-    error TransferNotStart();
 }

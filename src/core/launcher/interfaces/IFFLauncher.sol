@@ -5,6 +5,15 @@ pragma solidity ^0.8.26;
  * @title FFLauncher interface
  */
 interface IFFLauncher {
+    enum Stage {
+        Preparation,
+        Genesis,  
+        Locked, 
+        Unlocked,
+        Remaining,
+        Ended
+    }
+
     struct LaunchPool {
         address token;                  // Token address
         address generator;              // Token generator address
@@ -13,21 +22,38 @@ interface IFFLauncher {
         uint128 startTime;              // StartTime of launchPool
         uint128 endTime;                // EndTime of launchPool
         uint256 lockupDays;             // LockupDay of liquidity
-        uint256 totalSupply;            // Token totalSupply, if 0, indicates unlimited mintable tokens.
-        uint256 sharePercent;           // Percentage of totalSupply that can be minted by LaunchPool, if 100%, indicates can't generate remaining tokens.
-        uint256 mintedAmount;           // Amount of minted tokens by LaunchPool, including tokens in the liquidity pool.
-        bool areAllGenerated;           // Are all tokens generated?
+        uint128 totalSupply;            // Token totalSupply. if 0, The total supply is determined by the mintedAmount and the sharePercent.
+        uint128 mintedAmount;           // Amount of minted tokens by LaunchPool, including tokens in the liquidity pool
+        uint256 sharePercent;           // Percentage of totalSupply that can be minted by LaunchPool, if 100%, indicates can't generate remaining tokens
+        Stage currentStage;             // Current stage
+    }
+
+    struct GenesisFund {
+        uint128 totalTokenFunds;        // Initial fundraising(UPT) for token liquidity
+        uint128 totalLiquidProofFunds;  // Initial fundraising(UPT) for liquidProof liquidity
+    }
+
+    struct UserFundDetail {
+        uint256 totalFunds;             // Initial total fundraising(UPT)
+        bool liquidProofClaimStatus;    // LiquidProof claim status
+        bool proofLiquidityClaimStatus; // The liquidity of LiquidProof claim status
     }
 
     function getPoolUnlockTime(uint256 poolId) external view returns (uint256);
 
-    function deposit(uint256 amountInUPT) external;
+    function claimableLiquidProof(uint256 poolId) external view returns (uint256 claimableAmount);
 
-    function enablePoolTokenTransfer(uint256 poolId) external;
+    function genesis(uint256 amountInUPT) external;
 
-    function redeemLiquidity(uint256 poolId, uint256 liquidity) external;
+    function changeStage(uint256 poolId) external returns (Stage currentStage);
 
-    function claimTradeFees(uint256 poolId, address receiver) external;
+    function claimLiquidProof(uint256 poolId) external returns (uint256 amount);
+
+    function redeemLiquidProofLiquidity(uint256 poolId) external returns (address pair, uint256 lpTokenAmount);
+
+    function redeemLiquidity(uint256 poolId, uint256 proofTokenAmount) external;
+
+    function redeemMakerFees(uint256 poolId, address receiver) external returns (uint256 UPTFee, uint256 tokenFee);
 
     function generateRemainingTokens(uint256 poolId) external returns (uint256 remainingTokenAmount);
 
@@ -40,9 +66,9 @@ interface IFFLauncher {
 
     error LastPoolNotEnd();
 
-    error PermissionDenied();
+    error AlreadyRedeemed();
 
-    error AlreadyGenerated();
+    error PermissionDenied();
 
     error InvalidRegisterInfo();
 
@@ -54,35 +80,43 @@ interface IFFLauncher {
 
     error TimeExceeded(uint256 unlockTime);
 
-    error NotLiquidityLockStage(uint256 endTime);
-    
-    error NotLiquidityUnlockStage(uint256 unlockTime);
+    error NotLockedStage(Stage currentStage);
 
-    error NotTokenGenerationStage(uint256 generateTime);
+    error NotGenesisStage(Stage currentStage);
+    
+    error NotUnlockedStage(Stage currentStage);
+
+    error NotRemainingStage(Stage currentStage);
+
+    error InThePreparationStage(uint256 startTime);
 
     error InsufficientMintableAmount(uint256 mintableAmount);
 
-    error NotDepositStage(uint256 startTime, uint256 endTime);
 
-
-    event Deposit(
+    event Genesis(
         uint256 indexed poolId, 
-        address indexed account, 
-        uint256 amountInUPT, 
-        uint256 investorTokenAmount, 
-        uint256 liquidityTokenAmount, 
-        uint256 liquidity
+        address indexed depositer, 
+        uint256 increasedTokenFund, 
+        uint256 increasedLiquidProofFund, 
+        uint256 increasedTokenAmount
     );
 
-    event RedeemLiquidity(uint256 indexed poolId, address indexed account, uint256 liquidity);
+    event ClaimLiquidProof(uint256 indexed poolId, address indexed receiver, uint256 amount);
 
-    event ClaimTradeFees(
+    event RedeemLiquidProofLiquidity(
         uint256 indexed poolId, 
-        address to, 
-        address token0, 
-        uint256 amount0, 
-        address token1, 
-        uint256 amount1
+        address indexed receiver, 
+        address indexed pair, 
+        uint256 lpTokenAmount
+    );
+
+    event RedeemLiquidity(uint256 indexed poolId, address indexed receiver, uint256 liquidity);
+
+    event RedeemMakerFees(
+        uint256 indexed poolId, 
+        address indexed receiver, 
+        uint256 UPTFee, 
+        uint256 tokenFee
     );
 
     event GenerateRemainingTokens(uint256 indexed poolId, address token, address timeLockVault, uint256 remainingTokenAmount);
