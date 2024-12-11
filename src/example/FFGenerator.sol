@@ -67,4 +67,12 @@ contract FFGenerator is ITokenGenerator, Ownable, Initializable {
     function setFundReceiver(address _fundReceiver) external override onlyOwner {
         fundReceiver = _fundReceiver;
     }
+
+    /**
+     * @dev Redeem Maker Fees
+     * @param poolId - LaunchPool id
+     */
+    function redeemMakerFees(uint256 poolId) external override {
+        IFFLauncher(LAUNCHER).redeemMakerFees(poolId);
+    }
 }

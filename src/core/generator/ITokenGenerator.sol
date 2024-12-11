@@ -44,5 +44,11 @@ interface ITokenGenerator {
      */
     function setFundReceiver(address fundReceiver) external;
 
+    /**
+     * @dev Redeem Maker Fees
+     * @param poolId - LaunchPool id
+     */
+    function redeemMakerFees(uint256 poolId) external;
+
     error PermissionDenied();
 }
