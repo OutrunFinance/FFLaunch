@@ -93,8 +93,8 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
         uint256 increasedTokenFund;
         uint256 increasedLiquidProofFund;
         unchecked {
-            increasedTokenFund = amountInUPT / 3;
-            increasedLiquidProofFund = amountInUPT - increasedLiquidProofFund;
+            increasedLiquidProofFund = amountInUPT / 3;
+            increasedTokenFund = amountInUPT - increasedLiquidProofFund;
         }
         uint256 increasedTokenAmount = ITokenGenerator(pool.generator).generateLiquidityTokens(increasedTokenFund);
 
