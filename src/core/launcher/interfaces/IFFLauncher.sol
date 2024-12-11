@@ -81,6 +81,8 @@ interface IFFLauncher {
 
     error TimeExceeded(uint256 unlockTime);
 
+    error AfterGenesisStage(uint128 endTime);
+
     error NotLockedStage(Stage currentStage);
 
     error NotGenesisStage(Stage currentStage);

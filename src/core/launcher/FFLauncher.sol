@@ -247,8 +247,8 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
         address msgSender = msg.sender;
         LaunchPool storage pool = launchPools[poolId];
         require(msgSender == pool.generator, PermissionDenied());
-        Stage currentStage = pool.currentStage;
-        require(currentStage == Stage.Locked, NotLockedStage(currentStage));
+        uint128 endTime = pool.endTime;
+        require(block.timestamp > pool.endTime, AfterGenesisStage(endTime));
 
         address token = pool.token;
         IOutrunAMMPair tokenPair = IOutrunAMMPair(OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, token, UPT, SWAP_FEERATE));
