@@ -246,9 +246,7 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
     function redeemMakerFees(uint256 poolId) external override {
         address msgSender = msg.sender;
         LaunchPool storage pool = launchPools[poolId];
-        require(msgSender == pool.generator, PermissionDenied());
-        uint128 endTime = pool.endTime;
-        require(block.timestamp > pool.endTime, AfterGenesisStage(endTime));
+        require(msgSender == pool.generator && pool.currentStage >= Stage.Locked, PermissionDenied());
 
         address token = pool.token;
         IOutrunAMMPair tokenPair = IOutrunAMMPair(OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, token, UPT, SWAP_FEERATE));
