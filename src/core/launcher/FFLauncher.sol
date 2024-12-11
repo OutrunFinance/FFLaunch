@@ -126,7 +126,7 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
         uint256 currentTime = block.timestamp;
         uint128 startTime = pool.startTime;
         uint128 endTime = pool.endTime;
-        require(currentTime < startTime, InThePreparationStage(startTime));
+        require(currentTime > startTime, InThePreparationStage(startTime));
         
         uint256 unlockedTime = endTime + pool.lockupDays * DAY;
         if (pool.currentStage == Stage.Preparation && currentTime < endTime) {
