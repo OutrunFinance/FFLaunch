@@ -32,17 +32,25 @@ contract FFGenerator is ITokenGenerator, Ownable, Initializable {
         return LAUNCHER;
     }
 
+    /**
+     * @dev Preview generated tokens to be added to the liquidity pool
+     * @param tokenFundAmount - Amount of token liquidity fund
+     */
+    function previewGenerateLiquidityTokens(uint256 tokenFundAmount) external view returns (uint256 generatedTokenAmount) {
+        generatedTokenAmount = tokenFundAmount * FUND_BASED_AMOUNT;
+    }
+
     function initialize(address tokenAddress) external initializer onlyOwner {
         token = tokenAddress;
     } 
 
     /**
      * @dev Generate the tokens to be added to the liquidity pool
-     * @param liquidityFundAmount - Amount of liquidity fund
+     * @param tokenFundAmount - Amount of token liquidity fund
      */
-    function generateLiquidityTokens(uint256 liquidityFundAmount) external override onlyLauncher returns (uint256 liquidityTokenAmount) {
-        liquidityTokenAmount = liquidityFundAmount * FUND_BASED_AMOUNT;
-        IFFERC20(token).mint(LAUNCHER, liquidityTokenAmount);
+    function generateLiquidityTokens(uint256 tokenFundAmount) external override onlyLauncher returns (uint256 generatedTokenAmount) {
+        generatedTokenAmount = tokenFundAmount * FUND_BASED_AMOUNT;
+        IFFERC20(token).mint(LAUNCHER, generatedTokenAmount);
     }
 
     /**

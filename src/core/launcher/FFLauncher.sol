@@ -96,16 +96,6 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
             increasedLiquidProofFund = amountInUPT / 3;
             increasedTokenFund = amountInUPT - increasedLiquidProofFund;
         }
-        uint256 increasedTokenAmount = ITokenGenerator(pool.generator).generateLiquidityTokens(increasedTokenFund);
-
-        uint256 mintedAmount = pool.mintedAmount + increasedTokenAmount;
-        // if totalSupply == 0, indicates an unlimited amount of mintable tokens
-        uint256 totalSupply = pool.totalSupply;
-        if (totalSupply != 0) {
-            uint256 mintableAmount = totalSupply * pool.sharePercent / RATIO;
-            require(mintedAmount <= mintableAmount, InsufficientMintableAmount(mintableAmount));
-        }
-        pool.mintedAmount = uint128(mintedAmount);
 
         GenesisFund storage genesisFund = genesisFunds[id];
         unchecked {
@@ -114,7 +104,15 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
             userFundDetails[id][msgSender].totalFunds += amountInUPT;
         }
 
-        emit Genesis(id, msgSender, increasedTokenFund, increasedLiquidProofFund, increasedTokenAmount);
+        uint256 mintedAmount = ITokenGenerator(pool.generator).previewGenerateLiquidityTokens(genesisFund.totalTokenFunds);
+        // if totalSupply == 0, indicates an unlimited amount of mintable tokens
+        uint256 totalSupply = pool.totalSupply;
+        if (totalSupply != 0) {
+            uint256 mintableAmount = totalSupply * pool.sharePercent / RATIO;
+            require(mintedAmount <= mintableAmount, InsufficientMintableAmount(mintableAmount));
+        }
+
+        emit Genesis(id, msgSender, increasedTokenFund, increasedLiquidProofFund);
     }
 
     /**
@@ -137,7 +135,9 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
             address token = pool.token;
             GenesisFund storage genesisFund = genesisFunds[poolId];
             uint128 totalTokenFunds = genesisFund.totalTokenFunds;
-            uint256 tokenLiquidityAmount = _selfBalance(IERC20(token));
+            uint256 tokenLiquidityAmount = ITokenGenerator(pool.generator).generateLiquidityTokens(totalTokenFunds);
+            pool.mintedAmount = uint128(tokenLiquidityAmount);
+
             _safeApproveInf(token, OUTRUN_AMM_ROUTER);
             _safeApproveInf(UPT, OUTRUN_AMM_ROUTER);
             (,, uint256 tokenliquidity) = IOutrunAMMRouter(OUTRUN_AMM_ROUTER).addLiquidity(

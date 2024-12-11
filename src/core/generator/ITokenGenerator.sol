@@ -21,10 +21,16 @@ interface ITokenGenerator {
     function fundReceiver() external view returns (address);
 
     /**
-     * @dev Generate the tokens to be added to the liquidity pool
-     * @param liquidityFundAmount - Amount of liquidity fund
+     * @dev Preview generated tokens to be added to the liquidity pool
+     * @param tokenFundAmount - Amount of token liquidity fund
      */
-    function generateLiquidityTokens(uint256 liquidityFundAmount) external returns (uint256 increasedTokenFund);
+    function previewGenerateLiquidityTokens(uint256 tokenFundAmount) external view returns (uint256 generatedTokenAmount);
+
+    /**
+     * @dev Generate the tokens to be added to the liquidity pool
+     * @param tokenFundAmount - Amount of token liquidity fund
+     */
+    function generateLiquidityTokens(uint256 tokenFundAmount) external returns (uint256 generatedTokenAmount);
     
     /**
      * @dev Generate remaining tokens after FFLaunch event

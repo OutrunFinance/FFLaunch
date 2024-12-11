@@ -98,8 +98,7 @@ interface IFFLauncher {
         uint256 indexed poolId, 
         address indexed depositer, 
         uint256 increasedTokenFund, 
-        uint256 increasedLiquidProofFund, 
-        uint256 increasedTokenAmount
+        uint256 increasedLiquidProofFund
     );
 
     event ClaimLiquidProof(uint256 indexed poolId, address indexed receiver, uint256 amount);
