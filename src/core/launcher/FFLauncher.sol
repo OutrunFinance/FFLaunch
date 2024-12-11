@@ -272,7 +272,7 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
             uint256 UPTProtocolFee = token2 == UPT ? amount2 : amount3;
             uint256 liquidProofProtocolFee = token2 == liquidProof ? amount2 : amount3;
             _transferOut(UPT, revenuePool, UPTProtocolFee);
-            _transferOut(token, revenuePool, liquidProofProtocolFee);
+            _transferOut(liquidProof, revenuePool, liquidProofProtocolFee);
 
             emit RedeemProtocolFees(poolId, revenuePool, UPTProtocolFee, liquidProofProtocolFee);
         }
