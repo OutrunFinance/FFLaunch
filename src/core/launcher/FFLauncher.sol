@@ -1,25 +1,29 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.26;
+pragma solidity ^0.8.28;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import {IBurnable} from "../common/IBurnable.sol";
 import {IFFLauncher} from "./interfaces/IFFLauncher.sol";
 import {FFLiquidProof} from "../token/FFLiquidProof.sol";
+import {TokenHelper} from "../libraries/TokenHelper.sol";
 import {IFFERC20} from "../token/interfaces/IFFERC20.sol";
-import {IFFLiquidProof} from "../token/interfaces/IFFLiquidProof.sol";
+import {IOutrunAMMPair} from "../common/IOutrunAMMPair.sol";
 import {ITokenGenerator} from "../generator/ITokenGenerator.sol";
 import {AutoIncrementId} from "../libraries/AutoIncrementId.sol";
-import {TokenHelper} from "../libraries/TokenHelper.sol";
-import {IOutrunAMMPair} from "../libraries/IOutrunAMMPair.sol";
-import {IOutrunAMMRouter} from "../libraries/IOutrunAMMRouter.sol";
+import {IOutrunAMMRouter} from "../common/IOutrunAMMRouter.sol";
 import {OutrunAMMLibrary} from "../libraries/OutrunAMMLibrary.sol";
+import {IFFLiquidProof} from "../token/interfaces/IFFLiquidProof.sol";
 
 /**
  * @title FFLauncher
  */
-contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
+contract FFLauncher is IFFLauncher, TokenHelper, Pausable, Ownable, AutoIncrementId {
+    using Clones for address;
     using SafeERC20 for IERC20;
 
     uint256 public constant DAY = 24 * 3600;
@@ -29,7 +33,7 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
     address public immutable OUTRUN_AMM_ROUTER;
     address public immutable OUTRUN_AMM_FACTORY;
 
-    address public revenuePool;
+    address public polImplementation;
 
     mapping(uint256 poolId => LaunchPool) public launchPools;
     mapping(uint256 poolId => uint256) public claimableLiquidProofs;
@@ -40,18 +44,22 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
     constructor(
         address _owner,
         address _UPT,
-        address _revenuePool,
         address _outrunAMMRouter,
-        address _outrunAMMFactory
+        address _outrunAMMFactory,
+        address _polImplementation
     ) Ownable(_owner) {
         UPT = _UPT;
         OUTRUN_AMM_ROUTER = _outrunAMMRouter;
         OUTRUN_AMM_FACTORY = _outrunAMMFactory;
-        revenuePool = _revenuePool;
+        polImplementation = _polImplementation;
 
         _safeApproveInf(_UPT, _outrunAMMRouter);
     }
 
+    /**
+     * @dev Get the unlockTime of LaunchPool
+     * @param poolId - LaunchPool id
+     */
     function getPoolUnlockTime(uint256 poolId) external view override returns (uint256) {
         LaunchPool storage pool = launchPools[poolId];
         return pool.endTime + pool.lockupDays * DAY;
@@ -64,32 +72,27 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
     function claimableLiquidProof(uint256 poolId) public view override returns (uint256 claimableAmount) {
         LaunchPool storage pool = launchPools[poolId];
         Stage currentStage = pool.currentStage;
-        require(currentStage == Stage.Locked, NotLockedStage(currentStage));
+        require(currentStage >= Stage.Locked, NotReachedLockedStage(currentStage));
 
         uint256 totalFunds = genesisFunds[poolId].totalTokenFunds + genesisFunds[poolId].totalLiquidProofFunds;
         UserFundDetail storage userFundDetail = userFundDetails[poolId][msg.sender];
-        uint256 userTotalFunds = userFundDetail.totalFunds;
-        bool liquidProofClaimStatus = userFundDetail.liquidProofClaimStatus;
-        if (liquidProofClaimStatus == true) {
-            claimableAmount = 0;
-        } else {
-            claimableAmount = claimableLiquidProofs[poolId] * userTotalFunds / totalFunds;
+        unchecked {
+            if (!userFundDetail.POLClaimStatus) claimableAmount = claimableLiquidProofs[poolId] * userFundDetail.totalFunds / totalFunds;
         }
     }
 
     /**
-     * @dev Deposit UPT and mint token
+     * @dev Genesis launchPool by depositing UPT
      * @param amountInUPT - Amount of UPT to deposit
+     * @param user - Address of user participating in the genesis
      */
-    function genesis(uint256 amountInUPT) external {
+    function genesis(uint256 amountInUPT, address user) external whenNotPaused override {
         LaunchPool storage pool = launchPools[id];
         Stage currentStage = pool.currentStage;
         require(currentStage == Stage.Genesis, NotGenesisStage(currentStage));
         
-        address msgSender = msg.sender;
-        _transferIn(UPT, msgSender, amountInUPT);
+        _transferIn(UPT, msg.sender, amountInUPT);
 
-        // Calling the registered tokenGenerator contract to mint liquidity token
         uint256 increasedTokenFund;
         uint256 increasedLiquidProofFund;
         unchecked {
@@ -101,75 +104,81 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
         unchecked {
             genesisFund.totalTokenFunds  += uint128(increasedTokenFund);
             genesisFund.totalLiquidProofFunds += uint128(increasedLiquidProofFund);
-            userFundDetails[id][msgSender].totalFunds += amountInUPT;
+            userFundDetails[id][user].totalFunds += amountInUPT;
         }
 
-        uint256 mintedAmount = ITokenGenerator(pool.generator).previewGenerateLiquidityTokens(genesisFund.totalTokenFunds);
         // if totalSupply == 0, indicates an unlimited amount of mintable tokens
         uint256 totalSupply = pool.totalSupply;
         if (totalSupply != 0) {
-            uint256 mintableAmount = totalSupply * pool.sharePercent / RATIO;
-            require(mintedAmount <= mintableAmount, InsufficientMintableAmount(mintableAmount));
+            uint256 mintableAmount;
+            unchecked {
+                mintableAmount = totalSupply * pool.sharePercent / RATIO;
+            }
+            require(
+                ITokenGenerator(pool.generator).previewGeneratePoolTokens(genesisFund.totalTokenFunds)
+                    <= mintableAmount, 
+                InsufficientMintableAmount(mintableAmount)
+             );
         }
 
-        emit Genesis(id, msgSender, increasedTokenFund, increasedLiquidProofFund);
+        emit Genesis(id, user, increasedTokenFund, increasedLiquidProofFund);
     }
 
     /**
      * @dev Adaptively change the LaunchPool stage
      * @param poolId - LaunchPool id
      */
-    function changeStage(uint256 poolId) external override returns (Stage currentStage) {
+    function changeStage(uint256 poolId) external whenNotPaused override returns (Stage currentStage) {
         LaunchPool storage pool = launchPools[id];
         uint256 currentTime = block.timestamp;
         uint128 startTime = pool.startTime;
         uint128 endTime = pool.endTime;
-        require(currentTime > startTime, InThePreparationStage(startTime));
+        require(startTime != 0 && currentTime > startTime, InThePreparationStage(startTime));
         
         uint256 unlockedTime = endTime + pool.lockupDays * DAY;
         if (pool.currentStage == Stage.Preparation && currentTime < endTime) {
             pool.currentStage = Stage.Genesis;
             currentStage = Stage.Genesis;
-        } else if (pool.currentStage == Stage.Genesis && currentTime < unlockedTime) {
+        } else if (pool.currentStage == Stage.Genesis && currentTime > endTime) {
             // Deploy FF token liquidity
             address token = pool.token;
             GenesisFund storage genesisFund = genesisFunds[poolId];
             uint128 totalTokenFunds = genesisFund.totalTokenFunds;
-            uint256 tokenLiquidityAmount = ITokenGenerator(pool.generator).generateLiquidityTokens(totalTokenFunds);
-            pool.mintedAmount = uint128(tokenLiquidityAmount);
+            uint256 tokenAmount = ITokenGenerator(pool.generator).generatePoolTokens(totalTokenFunds);
+            pool.mintedAmount = uint128(tokenAmount);
 
-            _safeApproveInf(token, OUTRUN_AMM_ROUTER);
             _safeApproveInf(UPT, OUTRUN_AMM_ROUTER);
-            (,, uint256 tokenliquidity) = IOutrunAMMRouter(OUTRUN_AMM_ROUTER).addLiquidity(
+            _safeApproveInf(token, OUTRUN_AMM_ROUTER);
+            (,, uint256 tokenLiquidity) = IOutrunAMMRouter(OUTRUN_AMM_ROUTER).addLiquidity(
                 token,
                 UPT,
-                tokenLiquidityAmount,
+                tokenAmount,
                 totalTokenFunds,
-                tokenLiquidityAmount,
+                tokenAmount,
                 totalTokenFunds,
                 address(this),
-                block.timestamp + 600
+                block.timestamp
             );
 
             // Mint liquidity proof token and deploy liquid proof liquidity
             address liquidProof = pool.liquidProof;
-            IFFLiquidProof(liquidProof).mint(address(this), tokenliquidity);
-                
-            _safeApproveInf(liquidProof, OUTRUN_AMM_ROUTER);
+            IFFLiquidProof(liquidProof).mint(address(this), tokenLiquidity);
+            
             _safeApproveInf(UPT, OUTRUN_AMM_ROUTER);
+            _safeApproveInf(liquidProof, OUTRUN_AMM_ROUTER);
             uint128 totalLiquidProofFunds = genesisFund.totalLiquidProofFunds;
-            uint256 liquidProofLiquidityAmount = tokenliquidity / 4;
+            uint256 liquidProofAmount = tokenLiquidity / 4;
             (,, liquidProofLiquidities[poolId]) = IOutrunAMMRouter(OUTRUN_AMM_ROUTER).addLiquidity(
                 liquidProof,
                 UPT,
-                liquidProofLiquidityAmount,
+                liquidProofAmount,
                 totalLiquidProofFunds,
-                liquidProofLiquidityAmount,
+                liquidProofAmount,
                 totalLiquidProofFunds,
                 address(this),
-                block.timestamp + 600
+                block.timestamp
             );
-            claimableLiquidProofs[poolId] = tokenliquidity - liquidProofLiquidityAmount;
+            claimableLiquidProofs[poolId] = tokenLiquidity - liquidProofAmount;
 
             pool.currentStage = Stage.Locked;
             currentStage = Stage.Locked;
@@ -180,18 +189,20 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
             pool.currentStage = Stage.Remaining;
             currentStage = Stage.Remaining;
         }
+
+        emit ChangeStage(poolId, currentStage);
     }
 
     /**
      * @dev Claim liquidProof in stage Locked
      * @param poolId - LaunchPool id
      */
-    function claimLiquidProof(uint256 poolId) external returns (uint256 amount) {
+    function claimLiquidProof(uint256 poolId) external whenNotPaused override returns (uint256 amount) {
         amount = claimableLiquidProof(poolId);
 
         if (amount != 0) {
             address msgSender = msg.sender;
-            userFundDetails[poolId][msgSender].liquidProofClaimStatus = true;
+            userFundDetails[poolId][msgSender].POLClaimStatus = true;
             _transferOut(launchPools[poolId].liquidProof, msgSender, amount);
 
             emit ClaimLiquidProof(poolId, msgSender, amount);
@@ -202,20 +213,22 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
      * @dev Redeem liquidity of (liquidProof / UPT) pair
      * @param poolId - LaunchPool id
      */
-    function redeemLiquidProofLiquidity(uint256 poolId) external returns (address pair, uint256 lpTokenAmount) {
+    function redeemLiquidProofLiquidity(uint256 poolId) external whenNotPaused override returns (address pair, uint256 lpTokenAmount) {
         LaunchPool storage pool = launchPools[id];
         Stage currentStage = pool.currentStage;
-        require(currentStage == Stage.Unlocked, NotUnlockedStage(currentStage));
+        require(currentStage >= Stage.Unlocked, NotReachedUnlockedStage(currentStage));
 
         address msgSender = msg.sender;
         UserFundDetail storage userFundDetail = userFundDetails[poolId][msgSender];
-        require(!userFundDetail.proofLiquidityClaimStatus, AlreadyRedeemed());
+        require(!userFundDetail.POLLiquidityClaimStatus, AlreadyRedeemed());
         
-        userFundDetail.proofLiquidityClaimStatus = true;
+        userFundDetail.POLLiquidityClaimStatus = true;
         uint256 userTotalFunds = userFundDetail.totalFunds;
         uint256 totalFunds = genesisFunds[poolId].totalTokenFunds + genesisFunds[poolId].totalLiquidProofFunds;
         pair = OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, pool.liquidProof, UPT, SWAP_FEERATE);
-        lpTokenAmount = _selfBalance(IERC20(pair)) * userTotalFunds / totalFunds;
+        unchecked {
+            lpTokenAmount = _selfBalance(IERC20(pair)) * userTotalFunds / totalFunds;
+        }
         _transferOut(pair, msgSender, lpTokenAmount);
 
         emit RedeemLiquidProofLiquidity(poolId, msgSender, pair, lpTokenAmount);
@@ -224,56 +237,57 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
     /**
      * @dev Redeem your liquidity by pooId when liquidity unlocked
      * @param poolId - LaunchPool id
-     * @param proofTokenAmount - Burned liquid proof token amount
+     * @param amountInPOL - Burned POL token amount
      */
-    function redeemLiquidity(uint256 poolId, uint256 proofTokenAmount) external override {
+    function redeemLiquidity(uint256 poolId, uint256 amountInPOL) external whenNotPaused override {
         LaunchPool storage pool = launchPools[poolId];
         Stage currentStage = pool.currentStage;
-        require(currentStage == Stage.Unlocked, NotUnlockedStage(currentStage));
+        require(currentStage >= Stage.Unlocked, NotReachedUnlockedStage(currentStage));
 
         address msgSender = msg.sender;
-        IFFLiquidProof(pool.liquidProof).burn(msgSender, proofTokenAmount);
+        IFFLiquidProof(pool.liquidProof).burn(msgSender, amountInPOL);
         address pair = OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, pool.token, UPT, SWAP_FEERATE);
-        _transferOut(pair, msgSender, proofTokenAmount);
+        _transferOut(pair, msgSender, amountInPOL);
 
-        emit RedeemLiquidity(poolId, msgSender, proofTokenAmount);
+        emit RedeemLiquidity(poolId, msgSender, amountInPOL);
     }
 
     /**
      * @dev Claim maker fees of liquidity pool
      * @param poolId - LaunchPool id
      */
-    function redeemMakerFees(uint256 poolId) external override {
-        address msgSender = msg.sender;
+    function redeemMakerFees(uint256 poolId) external whenNotPaused override {
         LaunchPool storage pool = launchPools[poolId];
-        require(msgSender == pool.generator && pool.currentStage >= Stage.Locked, PermissionDenied());
+        Stage currentStage = pool.currentStage;
+        require(currentStage >= Stage.Locked, NotReachedLockedStage(currentStage));
 
         address token = pool.token;
         IOutrunAMMPair tokenPair = IOutrunAMMPair(OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, token, UPT, SWAP_FEERATE));
         (uint256 amount0, uint256 amount1) = tokenPair.claimMakerFee();
+        uint256 UPTFee;
+        uint256 tokenFee;
         if (amount0 != 0 && amount1 != 0) {
             address token0 = tokenPair.token0();
-            uint256 UPTFee = token0 == UPT ? amount0 : amount1;
-            uint256 tokenFee = token0 == token ? amount0 : amount1;
+            UPTFee = token0 == UPT ? amount0 : amount1;
+            tokenFee = token0 == token ? amount0 : amount1;
             address receiver = ITokenGenerator(pool.generator).fundReceiver();
             _transferOut(token, receiver, tokenFee);
             _transferOut(UPT, receiver, UPTFee);
-
-            emit RedeemMakerFees(poolId, receiver, UPTFee, tokenFee);
         }
         
         address liquidProof = pool.liquidProof;
         IOutrunAMMPair liquidProofPair = IOutrunAMMPair(OutrunAMMLibrary.pairFor(OUTRUN_AMM_FACTORY, liquidProof, UPT, SWAP_FEERATE));
         (uint256 amount2, uint256 amount3) = liquidProofPair.claimMakerFee();
+        uint256 burnedUPT;
+        uint256 burnedLiquidProof;
         if (amount2 != 0 && amount3 != 0) {
             address token2 = tokenPair.token0();
-            uint256 UPTProtocolFee = token2 == UPT ? amount2 : amount3;
-            uint256 liquidProofProtocolFee = token2 == liquidProof ? amount2 : amount3;
-            _transferOut(UPT, revenuePool, UPTProtocolFee);
-            _transferOut(liquidProof, revenuePool, liquidProofProtocolFee);
-
-            emit RedeemProtocolFees(poolId, revenuePool, UPTProtocolFee, liquidProofProtocolFee);
+            burnedUPT = token2 == UPT ? amount2 : amount3;
+            burnedLiquidProof = token2 == liquidProof ? amount2 : amount3;
+            IBurnable(UPT).burn(burnedUPT);
+            IBurnable(liquidProof).burn(burnedLiquidProof);
         }
+        emit RedeemMakerFees(poolId, UPTFee, tokenFee, burnedUPT, burnedLiquidProof);
     }
 
     /**
@@ -281,7 +295,7 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
      * @param poolId - LaunchPool id
      * @notice Only generator can call, only can call once
      */
-    function generateRemainingTokens(uint256 poolId) external override returns (uint256 remainingTokenAmount) {
+    function generateRemainingTokens(uint256 poolId) external whenNotPaused override returns (uint256 remainingTokenAmount) {
         LaunchPool storage pool = launchPools[poolId];
         require(msg.sender == pool.generator, PermissionDenied());
         Stage currentStage = pool.currentStage;
@@ -311,7 +325,7 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
      * @param poolParam - Pool param
      * @notice The tokenGenerator code should be kept as concise as possible and undergo auditing to prevent malicious behavior.
      */
-    function registerPool(LaunchPool calldata poolParam) external virtual override onlyOwner returns (uint256 poolId) {
+    function registerPool(LaunchPool calldata poolParam) external whenNotPaused override onlyOwner returns (uint256 poolId) {
         uint256 currentTime = block.timestamp;
         address token = poolParam.token;
         address timeLockVault = poolParam.timeLockVault;
@@ -322,8 +336,7 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
             token != address(0) && 
             timeLockVault != address(0) &&
             startTime > currentTime && 
-            endTime > currentTime && 
-            endTime > startTime &&
+            endTime > startTime && 
             sharePercent > 0 && 
             sharePercent <= RATIO, 
             InvalidRegisterInfo()
@@ -338,16 +351,18 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
             require(currentTime > launchPools[currentPoolId].endTime, LastPoolNotEnd());
         }
 
-        FFLiquidProof liquidProof = new FFLiquidProof(
-            string(abi.encodePacked(IFFERC20(token).name(), " Liquid")),
-            string(abi.encodePacked(IFFERC20(token).symbol(), " LIQUID")),
+        address liquidProof = polImplementation.clone();
+        IFFLiquidProof(liquidProof).initialize(
+            string(abi.encodePacked("POL-", IFFERC20(token).name())),
+            string(abi.encodePacked("POL-", IFFERC20(token).symbol())),
             18,
             address(this)
         );
+
         LaunchPool memory pool = LaunchPool(
             token,
             generator,
-            address(liquidProof),
+            liquidProof,
             timeLockVault,
             startTime,
             endTime,
@@ -370,7 +385,7 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
      * @param timeLockVault - TimeLockVault contract address
      * @notice The address can only be updated after the TimeLockVault contract is reviewed by the Outrun audit team.
      */
-    function updateTimeLockVault(uint256 poolId, address token, address timeLockVault) external override onlyOwner {
+    function updateTimeLockVault(uint256 poolId, address token, address timeLockVault) external whenNotPaused override onlyOwner {
         LaunchPool storage pool = launchPools[poolId];
         address poolToken = pool.token;
         require(poolToken == token, TokenMismatch(poolToken));
@@ -382,12 +397,22 @@ contract FFLauncher is IFFLauncher, TokenHelper, Ownable, AutoIncrementId {
     }
 
     /**
-     * @dev Set revenuePool
-     * @param _revenuePool - Revenue verse address
+     * @dev Set POL implementation logic contract
+     * @param _polImplementation - Address of polImplementation
      */
-    function setRevenuePool(address _revenuePool) external override onlyOwner {
-        require(_revenuePool != address(0), ZeroInput());
+    function setPolImplementation(address _polImplementation) external override onlyOwner {
+        require(_polImplementation != address(0), ZeroInput());
 
-        revenuePool = _revenuePool;
+        polImplementation = _polImplementation;
+
+        emit SetPolImplementation(_polImplementation);
+    }
+
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
     }
 }

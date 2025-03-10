@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.26;
+pragma solidity ^0.8.28;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -36,7 +36,7 @@ contract FFGenerator is ITokenGenerator, Ownable, Initializable {
      * @dev Preview generated tokens to be added to the liquidity pool
      * @param tokenFundAmount - Amount of token liquidity fund
      */
-    function previewGenerateLiquidityTokens(uint256 tokenFundAmount) external view returns (uint256 generatedTokenAmount) {
+    function previewGeneratePoolTokens(uint256 tokenFundAmount) external view returns (uint256 generatedTokenAmount) {
         generatedTokenAmount = tokenFundAmount * FUND_BASED_AMOUNT;
     }
 
@@ -48,7 +48,7 @@ contract FFGenerator is ITokenGenerator, Ownable, Initializable {
      * @dev Generate the tokens to be added to the liquidity pool
      * @param tokenFundAmount - Amount of token liquidity fund
      */
-    function generateLiquidityTokens(uint256 tokenFundAmount) external override onlyLauncher returns (uint256 generatedTokenAmount) {
+    function generatePoolTokens(uint256 tokenFundAmount) external override onlyLauncher returns (uint256 generatedTokenAmount) {
         generatedTokenAmount = tokenFundAmount * FUND_BASED_AMOUNT;
         IFFERC20(token).mint(LAUNCHER, generatedTokenAmount);
     }
@@ -66,13 +66,5 @@ contract FFGenerator is ITokenGenerator, Ownable, Initializable {
      */
     function setFundReceiver(address _fundReceiver) external override onlyOwner {
         fundReceiver = _fundReceiver;
-    }
-
-    /**
-     * @dev Redeem Maker Fees
-     * @param poolId - LaunchPool id
-     */
-    function redeemMakerFees(uint256 poolId) external override {
-        IFFLauncher(LAUNCHER).redeemMakerFees(poolId);
     }
 }

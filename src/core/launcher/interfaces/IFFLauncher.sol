@@ -35,15 +35,15 @@ interface IFFLauncher {
 
     struct UserFundDetail {
         uint256 totalFunds;             // Initial total fundraising(UPT)
-        bool liquidProofClaimStatus;    // LiquidProof claim status
-        bool proofLiquidityClaimStatus; // The liquidity of LiquidProof claim status
+        bool POLClaimStatus;            // POL claim status
+        bool POLLiquidityClaimStatus;   // The liquidity of POL claim status
     }
 
     function getPoolUnlockTime(uint256 poolId) external view returns (uint256);
 
     function claimableLiquidProof(uint256 poolId) external view returns (uint256 claimableAmount);
 
-    function genesis(uint256 amountInUPT) external;
+    function genesis(uint256 amountInUPT, address user) external;
 
     function changeStage(uint256 poolId) external returns (Stage currentStage);
 
@@ -61,7 +61,8 @@ interface IFFLauncher {
 
     function updateTimeLockVault(uint256 poolId, address token, address timeLockVault) external;
 
-    function setRevenuePool(address revenuePool) external;
+    function setPolImplementation(address polImplementation) external;
+
 
     error ZeroInput();
 
@@ -81,17 +82,15 @@ interface IFFLauncher {
 
     error TimeExceeded(uint256 unlockTime);
 
-    error AfterGenesisStage(uint128 endTime);
-
-    error NotLockedStage(Stage currentStage);
-
     error NotGenesisStage(Stage currentStage);
-    
-    error NotUnlockedStage(Stage currentStage);
 
     error NotRemainingStage(Stage currentStage);
 
     error InThePreparationStage(uint256 startTime);
+
+    error NotReachedLockedStage(Stage currentStage);
+
+    error NotReachedUnlockedStage(Stage currentStage);
 
     error InsufficientMintableAmount(uint256 mintableAmount);
 
@@ -102,6 +101,8 @@ interface IFFLauncher {
         uint256 increasedTokenFund, 
         uint256 increasedLiquidProofFund
     );
+
+    event ChangeStage(uint256 indexed poolId, Stage currentStage);
 
     event ClaimLiquidProof(uint256 indexed poolId, address indexed receiver, uint256 amount);
 
@@ -116,16 +117,10 @@ interface IFFLauncher {
 
     event RedeemMakerFees(
         uint256 indexed poolId, 
-        address indexed receiver, 
         uint256 UPTFee, 
-        uint256 tokenFee
-    );
-
-    event RedeemProtocolFees(
-        uint256 indexed poolId, 
-        address indexed revenuePool, 
-        uint256 UPTProtocolFee, 
-        uint256 liquidProofProtocolFee
+        uint256 tokenFee,
+        uint256 burnedUPT,
+        uint256 burnedLiquidProof
     );
 
     event GenerateRemainingTokens(uint256 indexed poolId, address token, address timeLockVault, uint256 remainingTokenAmount);
@@ -133,4 +128,6 @@ interface IFFLauncher {
     event RegisterPool(uint256 indexed poolId, LaunchPool pool);
 
     event UpdateTimeLockVault(uint256 indexed poolId, address timeLockVault);
+
+    event SetPolImplementation(address indexed polImplementation);
 }

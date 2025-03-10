@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.26;
+pragma solidity ^0.8.28;
 
+import {Initializable} from "../libraries/Initializable.sol";
 import {IFFLiquidProof} from "./interfaces/IFFLiquidProof.sol";
 
 /**
- * @title FFLaunch Liquid Proof Token
+ * @title FFLaunch Liquid Of Proof(POL) Token
  */
-contract FFLiquidProof is IFFLiquidProof {
+contract FFLiquidProof is IFFLiquidProof, Initializable {
     string public name;
     string public symbol;
     uint8 public decimals;
@@ -21,12 +22,19 @@ contract FFLiquidProof is IFFLiquidProof {
         _;
     }
 
-    constructor(
+    /**
+     * @notice Initialize the liquid proof.
+     * @param _name - The name of the liquid proof.
+     * @param _symbol - The symbol of the liquid proof.
+     * @param _decimals - The decimals of the liquid proof.
+     * @param _launcher - The address of the FFLauncher.
+     */
+    function initialize(
         string memory _name, 
         string memory _symbol, 
         uint8 _decimals, 
         address _launcher
-    ) {
+    ) external override initializer {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;
